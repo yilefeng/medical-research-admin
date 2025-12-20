@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.medical.research.mapper.SysUserMapper">
+
+    <select id="selectUserByUsername" resultType="com.medical.research.entity.SysUser">
+        SELECT * FROM sys_user WHERE username = #{username}
+    </select>
+
+    <select id="selectUserCount" resultType="java.lang.Long">
+        SELECT COUNT(1) FROM sys_user
+        <where>
+            <if test="req.username != null">
+                AND username LIKE CONCAT('%', #{req.username}, '%')
+            </if>
+            <if test="req.realName != null">
+                AND real_name LIKE CONCAT('%', #{req.realName}, '%')
+            </if>
+            <if test="req.status != null">
+                AND status = #{req.status}
+            </if>
+        </where>
+    </select>
+
+    <select id="selectUserPage" resultType="com.medical.research.entity.SysUser">
+        SELECT * FROM sys_user
+        <where>
+            <if test="req.username != null">
+                AND username LIKE CONCAT('%', #{req.username}, '%')
+            </if>
+            <if test="req.realName != null">
+                AND real_name LIKE CONCAT('%', #{req.realName}, '%')
+            </if>
+            <if test="req.status != null">
+                AND status = #{req.status}
+            </if>
+        </where>
+    </select>
+</mapper>

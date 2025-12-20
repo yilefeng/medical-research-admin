@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.medical.research.mapper.SysOperLogMapper">
+    <!-- 提取公共查询条件 -->
+    <sql id="logQueryCondition">
+        <if test="req.username != null and req.username != ''">
+            AND username LIKE CONCAT('%', #{req.username}, '%')
+        </if>
+        <if test="req.operModule != null and req.operModule != ''">
+            AND oper_module LIKE CONCAT('%', #{req.operModule}, '%')
+        </if>
+        <if test="req.operType != null and req.operType != ''">
+            AND oper_type LIKE CONCAT('%', #{req.operType}, '%')
+        </if>
+        <if test="req.startTime != null">
+            AND oper_time >= #{req.startTime}
+        </if>
+        <if test="req.endTime != null">
+            AND oper_time &lt; #{req.endTime}
+        </if>
+    </sql>
+
+    <update id="cleanLog">
+        DELETE FROM sys_oper_log WHERE oper_time > #{beforeTime}
+    </update>
+
+    <select id="selectOperLogPage" parameterType="com.medical.research.dto.sys.SysOperLogReqDTO"
+            resultType="com.medical.research.entity.SysOperLog">
+        SELECT * FROM sys_oper_log
+        WHERE 1=1
+        <include refid="logQueryCondition"/>
+        ORDER BY id DESC
+        LIMIT #{req.pageSize} OFFSET #{req.offset}
+    </select>
+
+    <select id="selectOperLogCount" resultType="java.lang.Long">
+        SELECT COUNT(1) FROM sys_oper_log
+        WHERE 1=1
+        <include refid="logQueryCondition"/>
+    </select>
+</mapper>

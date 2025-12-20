@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.medical.research.mapper.ResearchDataMapper">
+
+    <select id="selectDataPage" parameterType="com.medical.research.dto.research.ResearchDataReqDTO"
+            resultType="com.medical.research.entity.ResearchData">
+        SELECT * FROM research_data
+        WHERE 1=1
+        <if test="req.experimentNo != null and req.experimentNo != ''">
+            AND experiment_no LIKE CONCAT('%', #{req.experimentNo}, '%')
+        </if>
+        <if test="req.modelName != null and req.modelName != ''">
+            AND model_name LIKE CONCAT('%', #{req.modelName}, '%')
+        </if>
+        <if test="req.dataset != null and req.dataset != ''">
+            AND dataset LIKE CONCAT('%', #{req.dataset}, '%')
+        </if>
+        ORDER BY create_time DESC
+        LIMIT #{req.pageSize} OFFSET #{req.offset}
+    </select>
+    <select id="selectDataCount" resultType="java.lang.Long">
+        SELECT count(1) FROM research_data
+        WHERE 1=1
+        <if test="req.experimentNo != null and req.experimentNo != ''">
+            AND experiment_no LIKE CONCAT('%', #{req.experimentNo}, '%')
+        </if>
+        <if test="req.modelName != null and req.modelName != ''">
+            AND model_name LIKE CONCAT('%', #{req.modelName}, '%')
+        </if>
+        <if test="req.dataset != null and req.dataset != ''">
+            AND dataset LIKE CONCAT('%', #{req.dataset}, '%')
+        </if>
+    </select>
+    <select id="selectDataByExperimentNo" resultType="com.medical.research.entity.ResearchData">
+        SELECT * FROM research_data WHERE experiment_no = #{experimentNo}
+    </select>
+</mapper>
