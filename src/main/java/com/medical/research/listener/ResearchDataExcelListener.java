@@ -68,7 +68,7 @@ public class ResearchDataExcelListener extends AnalysisEventListener<ResearchDat
 
         // 补充默认字段
         data.setCreateTime(LocalDateTime.now());
-        data.setUpdateTime(LocalDateTime.now());
+//        data.setUpdateTime(LocalDateTime.now());
 
         // 添加到临时列表
         data.setId(null);
@@ -144,37 +144,7 @@ public class ResearchDataExcelListener extends AnalysisEventListener<ResearchDat
      * @return 校验失败信息（空字符串表示校验通过）
      */
     private String validateData(ResearchData data, int rowNum) {
-        // 1. 实验编号校验
-        if (!StringUtils.hasText(data.getExperimentNo())) {
-            return String.format("第%s行：实验编号不能为空", rowNum);
-        }
-
-        // 2. 模型名称校验
-        if (!StringUtils.hasText(data.getModelName())) {
-            return String.format("第%s行：模型名称不能为空", rowNum);
-        }
-
-        // 3. 数据集名称校验
-        if (!StringUtils.hasText(data.getDataset())) {
-            return String.format("第%s行：数据集名称不能为空", rowNum);
-        }
-
-        // 4. 数值字段校验（准确率/精确率/召回率/F1分数需在0-1之间）
-        if (data.getAccuracy() == null || data.getAccuracy().doubleValue() < 0 || data.getAccuracy().doubleValue() > 1) {
-            return String.format("第%s行：准确率必须为0-1之间的数值", rowNum);
-        }
-        if (data.getPrecision() == null || data.getPrecision().doubleValue() < 0 || data.getPrecision().doubleValue() > 1) {
-            return String.format("第%s行：精确率必须为0-1之间的数值", rowNum);
-        }
-        if (data.getRecall() == null || data.getRecall().doubleValue() < 0 || data.getRecall().doubleValue() > 1) {
-            return String.format("第%s行：召回率必须为0-1之间的数值", rowNum);
-        }
-        if (data.getF1Score() == null || data.getF1Score().doubleValue() < 0 || data.getF1Score().doubleValue() > 1) {
-            return String.format("第%s行：F1分数必须为0-1之间的数值", rowNum);
-        }
-
-        // 校验通过
-        return "";
+      return  "";
     }
 
     /**

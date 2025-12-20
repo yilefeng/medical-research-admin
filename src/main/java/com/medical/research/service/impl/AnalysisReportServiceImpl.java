@@ -1,285 +1,236 @@
 package com.medical.research.service.impl;
 
-import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.itextpdf.text.Document;
-import com.itextpdf.text.Font;
-import com.itextpdf.text.FontFactory;
-import com.itextpdf.text.Paragraph;
-import com.itextpdf.text.html.simpleparser.HTMLWorker;
-import com.itextpdf.text.pdf.BaseFont;
-import com.itextpdf.text.pdf.PdfWriter;
-import com.medical.research.dto.research.ResearchDataRespDTO;
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.medical.research.entity.AnalysisReport;
 import com.medical.research.entity.ExperimentPlan;
 import com.medical.research.entity.ResearchData;
-import com.medical.research.entity.StatModel;
 import com.medical.research.mapper.AnalysisReportMapper;
-import com.medical.research.dto.report.AnalysisReportReqDTO;
-import com.medical.research.dto.report.AnalysisReportRespDTO;
+import com.medical.research.mapper.ExperimentPlanMapper;
+import com.medical.research.mapper.ResearchDataMapper;
 import com.medical.research.service.AnalysisReportService;
-import com.medical.research.service.ExperimentPlanService;
-import com.medical.research.service.ResearchDataService;
-import com.medical.research.service.StatModelService;
-import com.medical.research.util.SecurityUserUtil;
-import org.apache.commons.math3.stat.inference.TTest;
-import org.apache.commons.math3.stat.inference.ChiSquareTest;
-import org.apache.commons.math3.stat.regression.SimpleRegression;
-import org.apache.commons.math3.stat.inference.OneWayAnova;
-import org.springframework.beans.BeanUtils;
+import com.medical.research.util.PdfReportUtil;
+import com.medical.research.util.RocChartUtil;
+import com.medical.research.util.StatTestUtil;
+import org.apache.commons.lang3.math.NumberUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.CollectionUtils;
-import org.xhtmlrenderer.pdf.ITextRenderer;
 
-import javax.annotation.Resource;
+import javax.servlet.http.HttpServletResponse;
 import java.io.File;
-import java.io.FileOutputStream;
+import java.io.FileInputStream;
 import java.io.OutputStream;
-import java.io.StringReader;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.time.LocalDateTime;
-import java.util.Date;
-import java.util.List;
+import java.math.BigDecimal;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
-public class AnalysisReportServiceImpl extends ServiceImpl<AnalysisReportMapper, AnalysisReport>
-        implements AnalysisReportService {
+public class AnalysisReportServiceImpl extends ServiceImpl<AnalysisReportMapper, AnalysisReport> implements AnalysisReportService {
 
-    @Resource
-    private AnalysisReportMapper analysisReportMapper;
+    @Autowired
+    private ResearchDataMapper researchDataMapper;
+    @Autowired
+    private ExperimentPlanMapper experimentPlanMapper;
+    @Autowired
+    private PdfReportUtil pdfReportUtil;
+    @Autowired
+    private RocChartUtil rocChartUtil;
 
-    @Resource
-    private ExperimentPlanService experimentPlanService;
-
-    @Resource
-    private StatModelService statModelService;
-
-    // 核心：注入科研数据服务，查询research_data表
-    @Resource
-    private ResearchDataService researchDataService;
-
-    // 统计工具类实例
-    private final TTest tTest = new TTest();
-    private final ChiSquareTest chiSquareTest = new ChiSquareTest();
-    private final SimpleRegression simpleRegression = new SimpleRegression();
-    private final OneWayAnova oneWayAnova = new OneWayAnova();
+    @Value("${custom.pdf.save-path:/data1/pdf}")
+    private String pdfSavePath;
 
     @Override
-    public Page<AnalysisReportRespDTO> getReportPage(AnalysisReportReqDTO req) {
-        Page<AnalysisReportRespDTO> page = new Page<>(req.getPageNum(), req.getPageSize());
+    public Map<String, Object> generateReport(AnalysisReport report) throws Exception {
+        // 1. 获取关联数据
+        List<Long> dataIdList = Arrays.stream(report.getDataIds().split(","))
+                .map(Long::parseLong).collect(Collectors.toList());
+        List<ResearchData> dataList = researchDataMapper.selectBatchIds(dataIdList);
+        ExperimentPlan plan = experimentPlanMapper.selectById(report.getExperimentId());
 
-        // 查询总数
-        Long total = analysisReportMapper.selectReportCount(req);
-        page.setTotal(total);
+        // 2. 提取标签和评分
+        List<Integer> labels = dataList.stream().map(ResearchData::getTrueLabel).collect(Collectors.toList());
+        List<Double> scores1 = dataList.stream().map(ResearchData::getModel1Score).collect(Collectors.toList());
+        List<Double> scores2 = dataList.stream().map(ResearchData::getModel2Score).collect(Collectors.toList());
 
-        // 查询列表
-        List<AnalysisReport> reportList = analysisReportMapper.selectReportPage(req);
-        List<AnalysisReportRespDTO> respList = reportList.stream().map(report -> {
-            AnalysisReportRespDTO resp = new AnalysisReportRespDTO();
-            BeanUtils.copyProperties(report, resp);
+        // 3. 统计计算+ROC数据
+        Map<String, Object> statResult = StatTestUtil.delongTestWithRoc(labels, scores1, scores2);
+        double auc1 = (double) statResult.get("auc1");
+        double auc2 = (double) statResult.get("auc2");
 
-            // 补充实验方案名称
-            ExperimentPlan plan = experimentPlanService.getById(report.getPlanId());
-            if (plan != null) {
-                resp.setPlanName(plan.getPlanName());
-            }
+        // 4. 生成ROC图片
+        List<Double> fpr1 = Arrays.stream((double[]) statResult.get("fpr1")).boxed().collect(Collectors.toList());
+        List<Double> tpr1 = Arrays.stream((double[]) statResult.get("tpr1")).boxed().collect(Collectors.toList());
+        List<Double> fpr2 = Arrays.stream((double[]) statResult.get("fpr2")).boxed().collect(Collectors.toList());
+        List<Double> tpr2 = Arrays.stream((double[]) statResult.get("tpr2")).boxed().collect(Collectors.toList());
+        String rocImagePath = rocChartUtil.generateRocChart(fpr1, tpr1, auc1, fpr2, tpr2, auc2, report.getReportName());
 
-            // 补充模型名称
-            StatModel model = statModelService.getById(report.getModelId());
-            if (model != null) {
-                resp.setModelName(model.getModelName());
-            }
-            return resp;
-        }).collect(Collectors.toList());
+        report.setAuc1(BigDecimal.valueOf(auc1));
+        report.setAuc2(BigDecimal.valueOf(auc2));
+        report.setAucDiff(BigDecimal.valueOf((double) statResult.get("aucDiff")) );
+        report.setStdErr(BigDecimal.valueOf((double) statResult.get("stdErr")));
+        report.setZValue(BigDecimal.valueOf((double) statResult.get("zValue")));
+        report.setPValue(BigDecimal.valueOf((double) statResult.get("pValue")));
 
-        page.setRecords(respList);
-        return page;
-    }
-
-    @Override
-    @Transactional(rollbackFor = Exception.class)
-    public boolean generateReport(AnalysisReportReqDTO req) {
-        // 1. 校验参数
-        if (req.getPlanId() == null || req.getModelId() == null) {
-            return false;
-        }
-
-        // 2. 获取统计模型
-        StatModel statModel = statModelService.getById(req.getModelId());
-        if (statModel == null) {
-            return false;
-        }
-
-        // 3. 获取实验方案，关联experimentNo（用于查询research_data表）
-        ExperimentPlan plan = experimentPlanService.getById(req.getPlanId());
-        if (plan == null || !org.springframework.util.StringUtils.hasText(plan.getExperimentNo())) {
-            return false;
-        }
-
-        // 4. 核心：从research_data表查询该实验的所有数据
-        List<ResearchDataRespDTO> researchDataList = researchDataService.getDataByExperimentNo(plan.getExperimentNo());
-        if (CollectionUtils.isEmpty(researchDataList)) {
-            throw new RuntimeException("该实验暂无科研数据，无法生成分析报告");
-        }
-
-        // 5. 调用统计模型生成报告内容（基于真实数据）
-        String reportContent = statModelService.executeModel(
-                statModel.getModelCode(),
-                req.getStatConditions(),
-                researchDataList // 传入真实数据列表
-        );
+        // 5. 生成PDF
+        String pdfPath = pdfReportUtil.generateReportPdf(report, plan, dataList, rocImagePath);
 
         // 6. 保存报告
-        AnalysisReport report = new AnalysisReport();
-        BeanUtils.copyProperties(req, report);
-        report.setReportContent(reportContent);
-        report.setStatus(1); // 已生成
-        report.setCreateTime(LocalDateTime.now());
-        report.setUpdateTime(LocalDateTime.now());
-        report.setUserId(SecurityUserUtil.getCurrentUserId());
-        return save(report);
+        report.setRocImagePath(rocImagePath);
+        report.setPdfPath(pdfPath);
+        this.save(report);
+
+        // 7. 返回结果
+        statResult.put("reportId", report.getId());
+        statResult.put("pdfPath", pdfPath);
+        statResult.put("rocImagePath", rocImagePath);
+        return statResult;
     }
 
     @Override
-    public AnalysisReportRespDTO getReportById(Long id) {
-        AnalysisReport report = getById(id);
-        if (report == null) {
-            return null;
+    public Map<String, Object> getReportDetail(Long reportId) {
+        AnalysisReport report = this.getById(reportId);
+        Map<String, Object> detail = new HashMap<>();
+        if (report != null) {
+            detail.put("report", report);
+            // 补充ROC数据
+            detail.putAll(getRocData(reportId));
         }
-
-        AnalysisReportRespDTO resp = new AnalysisReportRespDTO();
-        BeanUtils.copyProperties(report, resp);
-
-        // 补充关联信息
-        ExperimentPlan plan = experimentPlanService.getById(report.getPlanId());
-        if (plan != null) {
-            resp.setPlanName(plan.getPlanName());
-        }
-
-        StatModel model = statModelService.getById(report.getModelId());
-        if (model != null) {
-            resp.setModelName(model.getModelName());
-        }
-
-        return resp;
+        return detail;
     }
 
     @Override
-    @Transactional(rollbackFor = Exception.class)
-    public String exportPdf(Long id) {
-        AnalysisReport report = getById(id);
-        if (report == null || report.getStatus() == 3) { // 已作废
-            return null;
+    public Map<String, Object> getRocData(Long reportId) {
+        AnalysisReport report = this.getById(reportId);
+        Map<String, Object> rocData = new HashMap<>();
+        if (report != null && report.getDataIds() != null) {
+            List<Long> dataIdList = Arrays.stream(report.getDataIds().split(","))
+                    .map(Long::parseLong).collect(Collectors.toList());
+            List<ResearchData> dataList = researchDataMapper.selectBatchIds(dataIdList);
+            List<Integer> labels = dataList.stream().map(ResearchData::getTrueLabel).collect(Collectors.toList());
+            List<Double> scores1 = dataList.stream().map(ResearchData::getModel1Score).collect(Collectors.toList());
+            List<Double> scores2 = dataList.stream().map(ResearchData::getModel2Score).collect(Collectors.toList());
+
+            double[][] roc1 = RocChartUtil.calculateRocData(labels, scores1);
+            double[][] roc2 = RocChartUtil.calculateRocData(labels, scores2);
+            rocData.put("fpr1", roc1[0]);
+            rocData.put("tpr1", roc1[1]);
+            rocData.put("fpr2", roc2[0]);
+            rocData.put("tpr2", roc2[1]);
         }
-
-        try {
-            // 生成PDF文件路径
-            String pdfPath = System.getProperty("user.dir") + "/pdf/report_" + id + "_" + System.currentTimeMillis() + ".pdf";
-
-            // 确保目录存在
-            File pdfDir = new File(System.getProperty("user.dir") + "/pdf");
-            if (!pdfDir.exists()) {
-                pdfDir.mkdirs();
-            }
-
-            // 将HTML报告内容转换为PDF
-            generatePdfFromHtml(report.getReportContent(), pdfPath);
-
-            // 更新报告状态为已导出
-            report.setStatus(2);
-            report.setUpdateTime(LocalDateTime.now());
-            updateById(report);
-
-            return pdfPath;
-        } catch (Exception e) {
-            log.error("PDF生成失败", e);
-            throw new RuntimeException("PDF生成失败：" + e.getMessage());
-        }
+        return rocData;
     }
 
-    public String generatePdfFromHtmlNew(String htmlContent, String pdfPath) {
-        try {
-            // 包装HTML内容为完整且格式正确的XHTML文档
-            String fullHtml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
-                    "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Strict//EN\" " +
-                    "\"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd\">\n" +
-                    "<html xmlns=\"http://www.w3.org/1999/xhtml\">\n" +
-                    "<head>\n" +
-                    "<meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\" />\n" +
-                    "<title>分析报告</title>\n" +
-                    "</head>\n" +
-                    "<body>\n" +
-                    htmlContent + "\n" +
-                    "</body>\n" +
-                    "</html>";
-
-            OutputStream os = Files.newOutputStream(Paths.get(pdfPath));
-            ITextRenderer renderer = new ITextRenderer();
-            renderer.setDocumentFromString(fullHtml);
-            renderer.layout();
-            renderer.createPDF(os);
-            os.close();
-
-            return pdfPath;
-        } catch (Exception e) {
-            log.error("PDF生成失败，HTML内容: {}", new Exception(htmlContent));
-            throw new RuntimeException("PDF生成失败：" + e.getMessage());
+    @Override
+    public void previewPdf(Long id, HttpServletResponse response) throws Exception {
+        AnalysisReport report = this.getById(id);
+        if (report == null || report.getPdfPath() == null) {
+            throw new Exception("PDF报告不存在");
         }
-    }
-
-    public String generatePdfFromHtml(String htmlContent, String pdfPath) {
-        try {
-            Document document = new Document();
-            PdfWriter.getInstance(document, Files.newOutputStream(Paths.get(pdfPath)));
-            document.open();
-
-            // 支持中文的字体设置
-            BaseFont baseFont = BaseFont.createFont("STSong-Light", "UniGB-UCS2-H", BaseFont.NOT_EMBEDDED);
-            Font font = new Font(baseFont, 12);
-
-            // 手动解析简单的HTML标签
-            parseSimpleHtml(document, htmlContent, font);
-
-            document.close();
-            return pdfPath;
-        } catch (Exception e) {
-            log.error("PDF生成失败，HTML内容: {}", new Exception(htmlContent));
-            throw new RuntimeException("PDF生成失败：" + e.getMessage());
+        String pdfLocalPath = report.getPdfPath().replace("/upload/report/", pdfSavePath);
+        File pdfFile = new File(pdfLocalPath);
+        if (!pdfFile.exists()) {
+            throw new Exception("PDF文件不存在");
         }
-    }
 
-    private void parseSimpleHtml(Document document, String htmlContent, Font font) throws Exception {
-        // 简单的HTML解析处理
-        String[] parts = htmlContent.split("(?=<h[1-6]>|</h[1-6]>|<p>|</p>)");
-
-        for (String part : parts) {
-            if (part.startsWith("<h3>")) {
-                String content = part.replaceAll("<h3>|</h3>", "").trim();
-                Font headerFont = new Font(font.getBaseFont(), 16, Font.BOLD);
-                document.add(new Paragraph(content, headerFont));
-            } else if (part.startsWith("<p>")) {
-                String content = part.replaceAll("<p>|</p>", "").trim();
-                document.add(new Paragraph(content, font));
-            } else if (!part.trim().isEmpty() && !part.startsWith("</")) {
-                // 处理剩余文本
-                document.add(new Paragraph(part.trim(), font));
+        // 返回文件流
+        response.setContentType("application/pdf");
+        response.setHeader("Content-Disposition", "inline; filename=" + pdfFile.getName());
+        try (FileInputStream fis = new FileInputStream(pdfFile);
+             OutputStream os = response.getOutputStream()) {
+            byte[] buffer = new byte[1024];
+            int len;
+            while ((len = fis.read(buffer)) != -1) {
+                os.write(buffer, 0, len);
             }
         }
     }
 
     @Override
-    @Transactional(rollbackFor = Exception.class)
-    public boolean invalidReport(Long id) {
-        AnalysisReport report = getById(id);
+    public void downloadPdf(Long id, HttpServletResponse response) throws Exception {
+        AnalysisReport report = this.getById(id);
+        if (report == null || report.getPdfPath() == null) {
+            throw new Exception("PDF报告不存在");
+        }
+        String pdfLocalPath = report.getPdfPath().replace("/upload/report/", pdfSavePath);
+        File pdfFile = new File(pdfLocalPath);
+        if (!pdfFile.exists()) {
+            throw new Exception("PDF文件不存在");
+        }
+
+        // 触发下载
+        response.setContentType("application/octet-stream");
+        response.setHeader("Content-Disposition", "attachment; filename=" + pdfFile.getName());
+        try (FileInputStream fis = new FileInputStream(pdfFile);
+             OutputStream os = response.getOutputStream()) {
+            byte[] buffer = new byte[1024];
+            int len;
+            while ((len = fis.read(buffer)) != -1) {
+                os.write(buffer, 0, len);
+            }
+        }
+    }
+
+    @Override
+    public void previewRocImage(Long id, HttpServletResponse response) throws Exception {
+        AnalysisReport report = this.getById(id);
+        if (report == null || report.getRocImagePath() == null) {
+            throw new Exception("ROC图片不存在");
+        }
+        String rocLocalPath = report.getRocImagePath().replace("/upload/report/roc/", pdfSavePath + "roc/");
+        File rocFile = new File(rocLocalPath);
+        if (!rocFile.exists()) {
+            throw new Exception("ROC图片文件不存在");
+        }
+
+        // 返回图片流
+        response.setContentType("image/png");
+        try (FileInputStream fis = new FileInputStream(rocFile);
+             OutputStream os = response.getOutputStream()) {
+            byte[] buffer = new byte[1024];
+            int len;
+            while ((len = fis.read(buffer)) != -1) {
+                os.write(buffer, 0, len);
+            }
+        }
+    }
+
+    @Override
+    public boolean deleteReportWithFile(Long id) {
+        AnalysisReport report = this.getById(id);
         if (report == null) {
             return false;
         }
+        // 删除PDF文件
+        if (report.getPdfPath() != null) {
+            String pdfLocalPath = report.getPdfPath().replace("/upload/report/", pdfSavePath);
+            File pdfFile = new File(pdfLocalPath);
+            if (pdfFile.exists()) {
+                pdfFile.delete();
+            }
+        }
+        // 删除ROC图片
+        if (report.getRocImagePath() != null) {
+            String rocLocalPath = report.getRocImagePath().replace("/upload/report/roc/", pdfSavePath + "roc/");
+            File rocFile = new File(rocLocalPath);
+            if (rocFile.exists()) {
+                rocFile.delete();
+            }
+        }
+        // 删除数据库记录
+        return this.removeById(id);
+    }
 
-        report.setStatus(3); // 已作废
-        report.setUpdateTime(LocalDateTime.now());
-        return updateById(report);
+    // 报告分页查询（供报告管理模块调用）
+    public Object getReportPageList(String reportName, Integer pageNum, Integer pageSize) {
+        Page<AnalysisReport> page = new Page<>(pageNum, pageSize);
+        LambdaQueryWrapper<AnalysisReport> wrapper = new LambdaQueryWrapper<>();
+        if (reportName != null && !reportName.isEmpty()) {
+            wrapper.like(AnalysisReport::getReportName, reportName);
+        }
+        wrapper.orderByDesc(AnalysisReport::getCreateTime);
+        return this.page(page, wrapper);
     }
 }

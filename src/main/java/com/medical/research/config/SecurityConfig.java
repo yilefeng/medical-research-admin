@@ -66,6 +66,8 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .antMatchers("/login").permitAll() // 登录接口放行
                         .antMatchers("/error/**").permitAll() // 公开接口放行
+                        .antMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
+                        .antMatchers("/download/**").permitAll()
                         .anyRequest().authenticated() // 其他请求需要认证
                 )
                 // 4. 添加JWT过滤器（在用户名密码过滤器之前）

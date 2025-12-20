@@ -7,31 +7,19 @@ import com.medical.research.dto.report.AnalysisReportReqDTO;
 import com.medical.research.dto.report.AnalysisReportRespDTO;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 
+import javax.servlet.http.HttpServletResponse;
+import java.util.Map;
+
 public interface AnalysisReportService extends IService<AnalysisReport> {
 
-    /**
-     * 分页查询分析报告
-     */
-    Page<AnalysisReportRespDTO> getReportPage(AnalysisReportReqDTO req);
+    Map<String, Object> generateReport(AnalysisReport report) throws Exception;
+    Map<String, Object> getReportDetail(Long reportId);
+    Map<String, Object> getRocData(Long reportId);
+    void previewPdf(Long id, HttpServletResponse response) throws Exception;
+    void downloadPdf(Long id, HttpServletResponse response) throws Exception;
+    void previewRocImage(Long id, HttpServletResponse response) throws Exception;
+    boolean deleteReportWithFile(Long id);
 
-    /**
-     * 生成分析报告
-     */
-    boolean generateReport(AnalysisReportReqDTO req);
-
-    /**
-     * 根据ID查询报告详情
-     */
-    AnalysisReportRespDTO getReportById(Long id);
-
-    /**
-     * 导出PDF报告
-     */
-    String exportPdf(Long id);
-
-    /**
-     * 作废报告
-     */
-    boolean invalidReport(Long id);
+    Object getReportPageList(String reportName, Integer pageNum, Integer pageSize);
 }
 

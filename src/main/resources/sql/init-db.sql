@@ -1,18 +1,17 @@
--- 数据库创建
-CREATE DATABASE IF NOT EXISTS medical_research DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+-- 创建数据库
+CREATE DATABASE IF NOT EXISTS medical_research DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
 USE medical_research;
 
--- 1. 实验方案表
 CREATE TABLE `experiment_plan` (
-                                   `id` BIGINT NOT NULL AUTO_INCREMENT COMMENT '实验ID',
-                                   `plan_name` VARCHAR(255) NOT NULL COMMENT '实验名称',
-                                   `research_purpose` TEXT COMMENT '研究目的',
-                                   `model_info` VARCHAR(500) COMMENT '模型信息（如：模型1=CNN，模型2=Transformer）',
-                                   `creator` VARCHAR(50) DEFAULT 'admin' COMMENT '创建人',
-                                   `create_time` DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
-                                   `update_time` DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+                                   `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '主键ID',
+                                   `plan_name` varchar(255) NOT NULL COMMENT '实验方案名称',
+                                   `research_purpose` text COMMENT '研究目的',
+                                   `model_info` varchar(500) DEFAULT NULL COMMENT '模型信息',
+                                   `experiment_desc` text COMMENT '实验描述',
+                                   `create_time` datetime DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+                                   `update_time` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
                                    PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='医疗科研实验方案表';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='实验方案表';
 
 -- 2. 科研数据表（关联实验方案）
 CREATE TABLE `research_data` (
@@ -33,7 +32,7 @@ CREATE TABLE `analysis_report` (
                                    `id` BIGINT NOT NULL AUTO_INCREMENT COMMENT '报告ID',
                                    `experiment_id` BIGINT NOT NULL COMMENT '关联实验ID',
                                    `data_ids` VARCHAR(500) NOT NULL COMMENT '关联数据ID（多个用逗号分隔）',
-                                   `test_method` VARCHAR(50) NOT NULL COMMENT '检验方法（DeLong/AUC)',
+                                   `test_method` VARCHAR(50) NOT NULL COMMENT '检验方法（DeLong/AUC/配对T检验）',
                                    `auc1` DECIMAL(10,4) COMMENT '模型1 AUC',
                                    `auc2` DECIMAL(10,4) COMMENT '模型2 AUC',
                                    `auc_diff` DECIMAL(10,4) COMMENT 'AUC差异',
@@ -52,7 +51,7 @@ CREATE TABLE `analysis_report` (
 CREATE TABLE `sys_user` (
                             `id` BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键ID',
                             `username` VARCHAR(50) NOT NULL COMMENT '用户名（唯一）',
-                            `password` VARCHAR(100) NOT NULL COMMENT '密码（加密存储）',
+                            `password` VARCHAR(100) NOT NULL COMMENT '密码（加密存储，默认123456加密后：$2a$10$7JB720yubVSZvUI0rEqK/.VqGOZTH.ulu33dHOiBE8ByOhJIrdAu2）',
                             `real_name` VARCHAR(50) COMMENT '真实姓名',
                             `phone` VARCHAR(20) COMMENT '手机号',
                             `email` VARCHAR(50) COMMENT '邮箱',
@@ -104,15 +103,19 @@ CREATE TABLE `sys_oper_log` (
                                 INDEX `idx_oper_module` (`oper_module`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='系统操作日志表';
 
--
-INSERT INTO sys_user (username, password, real_name, phone, email, status) VALUES
-                                                                               ('admin', 'e10adc3949ba59abbe56e057f20f883e', '系统管理员', '13800138000', 'admin@research.com', 1),
-                                                                               ('researcher01', 'e10adc3949ba59abbe56e057f20f883e', '科研人员01', '13900139000', 'researcher01@research.com', 1);
+-- 初始化数据
+-- 初始化角色
+INSERT INTO `sys_role` (`role_name`, `role_code`, `description`) VALUES
+                                                                     ('系统管理员', 'admin', '拥有系统所有操作权限'),
+                                                                     ('科研人员', 'researcher', '拥有实验创建、数据上传、分析查看等权限');
 
-INSERT INTO sys_role (role_name, role_code, description) VALUES
-                                                             ('管理员', 'admin', '拥有平台所有操作权限，可管理用户、角色、实验方案等'),
-                                                             ('科研人员', 'researcher', '仅可操作本人创建的实验方案、数据及报告');
+-- 初始化管理员用户（密码：123456，BCrypt加密）
+INSERT INTO `sys_user` (`username`, `password`, `real_name`, `phone`, `email`) VALUES
+    ('admin', '$2a$10$7JB720yubVSZvUI0rEqK/.VqGOZTH.ulu33dHOiBE8ByOhJIrdAu2', '系统管理员', '13800138000', 'admin@medical.com');
 
-INSERT INTO sys_user_role (user_id, role_id) VALUES
-                                                 (1, 1),
-                                                 (2, 2);
+-- 初始化用户角色关联
+INSERT INTO `sys_user_role` (`user_id`, `role_id`) VALUES (1, 1);
+
+-- 初始化测试实验
+INSERT INTO `experiment_plan` (`plan_name`, `research_purpose`, `model_info`) VALUES
+    ('肺癌CT影像良恶性诊断模型AUC比较实验', '对比传统CNN模型与Transformer模型在肺癌CT影像良恶性诊断中的性能差异，通过DeLong检验验证AUC是否存在统计学显著差异', '模型1=传统CNN模型（基于ResNet50），模型2=Transformer模型（基于ViT）');
