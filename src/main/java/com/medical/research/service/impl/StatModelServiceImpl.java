@@ -122,7 +122,7 @@ public class StatModelServiceImpl extends ServiceImpl<StatModelMapper, StatModel
 
     // ========== 统计方法实现（新增conditionObj参数，增强灵活性） ==========
     /**
-     * T检验：支持通过统计条件指定对比的两个模型
+     * T检验：支持通过统计条件指定对比的两个
      */
     private String executeTTest(List<ResearchDataRespDTO> dataList, JSONObject conditionObj) {
         // 从统计条件中获取要对比的两个模型（默认取前两个）
@@ -169,7 +169,7 @@ public class StatModelServiceImpl extends ServiceImpl<StatModelMapper, StatModel
             // 生成报告
             return String.format(
                     "<h3>独立样本t检验报告</h3>" +
-                            "<p><strong>对比模型：</strong>%s vs %s</p>" +
+                            "<p><strong>分组：</strong>%s vs %s</p>" +
                             "<p><strong>样本量：</strong>%s组=%d条，%s组=%d条</p>" +
                             "<p><strong>均值：</strong>%s组=%.4f，%s组=%.4f</p>" +
                             "<p><strong>p值：</strong>%.4f</p>" +
