@@ -12,7 +12,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.awt.*;
+import java.awt.geom.Point2D;
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
@@ -38,7 +40,6 @@ public class RocChartUtil {
         // 图片文件名
         String imgFileName = "ROC曲线_" + reportName + "_" + System.currentTimeMillis() + ".png";
         String imgFullPath = imgDir + imgFileName;
-//        String imgAccessPath = pdfAccessPath + "roc/" + imgFileName;
 
         // 构建数据集
         XYSeriesCollection dataset = new XYSeriesCollection();
@@ -46,15 +47,27 @@ public class RocChartUtil {
         XYSeries series2 = new XYSeries("模型2 (AUC=" + String.format("%.4f", auc2) + ")");
         XYSeries baseline = new XYSeries("随机猜测");
 
-        // 添加模型1数据
+        // 添加模型1数据（确保按FPR升序排列）
+        List<Point2D> points1 = new ArrayList<>();
         for (int i = 0; i < fpr1.size(); i++) {
-            series1.add(fpr1.get(i), tpr1.get(i));
+            points1.add(new Point2D.Double(fpr1.get(i), tpr1.get(i)));
         }
-        // 添加模型2数据
+        points1.sort(Comparator.comparing(Point2D::getX));
+        for (Point2D point : points1) {
+            series1.add(point.getX(), point.getY());
+        }
+
+        // 添加模型2数据（确保按FPR升序排列）
+        List<Point2D> points2 = new ArrayList<>();
         for (int i = 0; i < fpr2.size(); i++) {
-            series2.add(fpr2.get(i), tpr2.get(i));
+            points2.add(new Point2D.Double(fpr2.get(i), tpr2.get(i)));
         }
-        // 添加基线（对角线）
+        points2.sort(Comparator.comparing(Point2D::getX));
+        for (Point2D point : points2) {
+            series2.add(point.getX(), point.getY());
+        }
+
+        // 确保基线正确显示
         baseline.add(0.0, 0.0);
         baseline.add(1.0, 1.0);
 
@@ -72,13 +85,30 @@ public class RocChartUtil {
                 true, true, false
         );
 
+        // 设置中文字体支持
+        Font titleFont = new Font("微软雅黑", Font.BOLD, 16);
+        Font labelFont = new Font("微软雅黑", Font.PLAIN, 12);
+        Font legendFont = new Font("微软雅黑", Font.PLAIN, 11);
+
+        // 应用字体到图表元素
+        chart.getTitle().setFont(titleFont);
+        chart.getXYPlot().getDomainAxis().setLabelFont(labelFont);
+        chart.getXYPlot().getRangeAxis().setLabelFont(labelFont);
+        chart.getXYPlot().getDomainAxis().setTickLabelFont(labelFont);
+        chart.getXYPlot().getRangeAxis().setTickLabelFont(labelFont);
+        chart.getLegend().setItemFont(legendFont);
+
         // 美化图表
         XYPlot plot = chart.getXYPlot();
-        plot.getRenderer().setSeriesPaint(0, Color.decode("#1989fa"));
-        plot.getRenderer().setSeriesPaint(1, Color.decode("#f56c6c"));
-        plot.getRenderer().setSeriesPaint(2, Color.decode("#909399"));
+        plot.getRenderer().setSeriesPaint(0, Color.decode("#1989fa")); // 模型1蓝色
+        plot.getRenderer().setSeriesPaint(1, Color.decode("#f56c6c")); // 模型2红色
+        plot.getRenderer().setSeriesPaint(2, Color.decode("#909399")); // 基线灰色
         plot.getRenderer().setSeriesStroke(2, new BasicStroke(1.0f, BasicStroke.CAP_BUTT,
-                BasicStroke.JOIN_BEVEL, 0, new float[]{5, 5}, 0));
+                BasicStroke.JOIN_BEVEL, 0, new float[]{5, 5}, 0)); // 虚线样式
+
+        // 设置坐标轴范围确保ROC曲线正确显示
+        plot.getDomainAxis().setRange(0.0, 1.0);
+        plot.getRangeAxis().setRange(0.0, 1.0);
 
         // 保存图片
         ChartUtils.saveChartAsPNG(new File(imgFullPath), chart, 800, 600);

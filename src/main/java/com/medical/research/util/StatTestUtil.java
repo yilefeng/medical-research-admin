@@ -158,9 +158,22 @@ public class StatTestUtil {
         double zValue = delongResult[4];
         double pValue = delongResult[5];
 
+        // 验证AUC值并确保曲线在对角线上方
+//        if (auc1 < 0.5) {
+//            // 如果AUC<0.5，说明模型表现低于随机猜测，可能需要反转预测
+//            auc1 = 1.0 - auc1;
+//        }
+//        if (auc2 < 0.5) {
+//            auc2 = 1.0 - auc2;
+//        }
+
         // 计算ROC数据
         double[][] rocData1 = RocChartUtil.calculateRocData(labels, scores1);
         double[][] rocData2 = RocChartUtil.calculateRocData(labels, scores2);
+
+        // 确保ROC数据按FPR升序排列
+        rocData1 = sortRocData(rocData1);
+        rocData2 = sortRocData(rocData2);
 
         // 封装结果
         Map<String, Object> result = new java.util.HashMap<>();
@@ -175,5 +188,28 @@ public class StatTestUtil {
         result.put("fpr2", rocData2[0]);
         result.put("tpr2", rocData2[1]);
         return result;
+    }
+
+    // 添加ROC数据排序方法
+    private static double[][] sortRocData(double[][] rocData) {
+        int n = rocData[0].length;
+        java.util.List<java.awt.geom.Point2D.Double> points = new java.util.ArrayList<>();
+
+        for (int i = 0; i < n; i++) {
+            points.add(new java.awt.geom.Point2D.Double(rocData[0][i], rocData[1][i]));
+        }
+
+        // 按FPR升序排序
+        points.sort(java.util.Comparator.comparing(java.awt.geom.Point2D.Double::getX));
+
+        double[] sortedFpr = new double[n];
+        double[] sortedTpr = new double[n];
+
+        for (int i = 0; i < n; i++) {
+            sortedFpr[i] = points.get(i).x;
+            sortedTpr[i] = points.get(i).y;
+        }
+
+        return new double[][]{sortedFpr, sortedTpr};
     }
 }
