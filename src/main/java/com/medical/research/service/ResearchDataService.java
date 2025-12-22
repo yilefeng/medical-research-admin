@@ -12,5 +12,5 @@ import java.util.List;
 public interface ResearchDataService extends IService<ResearchData> {
 
     String importCsvData(Long experimentId, MultipartFile file) throws Exception;
-    Object getPageList(Long experimentId, Integer pageNum, Integer pageSize);
+    Page<ResearchData> getPageList(Long experimentId, Integer pageNum, Integer pageSize);
 }

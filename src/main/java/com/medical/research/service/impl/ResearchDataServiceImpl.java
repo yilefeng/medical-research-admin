@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.InputStreamReader;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -35,6 +36,7 @@ public class ResearchDataServiceImpl extends ServiceImpl<ResearchDataMapper, Res
                 data.setModel1Score(Double.parseDouble(record.get("model1_score")));
                 data.setModel2Score(Double.parseDouble(record.get("model2_score")));
                 data.setDataSource(file.getOriginalFilename());
+                data.setCreateTime(LocalDateTime.now());
                 dataList.add(data);
             }
         }
@@ -44,14 +46,13 @@ public class ResearchDataServiceImpl extends ServiceImpl<ResearchDataMapper, Res
     }
 
     @Override
-    public Object getPageList(Long experimentId, Integer pageNum, Integer pageSize) {
+    public Page<ResearchData> getPageList(Long experimentId, Integer pageNum, Integer pageSize) {
         Page<ResearchData> page = new Page<>(pageNum, pageSize);
         LambdaQueryWrapper<ResearchData> wrapper = new LambdaQueryWrapper<>();
         if (experimentId != null) {
             wrapper.eq(ResearchData::getExperimentId, experimentId);
         }
-        wrapper.orderByDesc(ResearchData::getCreateTime);
-        IPage<ResearchData> dataPage = this.page(page, wrapper);
-        return dataPage;
+        wrapper.orderByDesc(ResearchData::getId);
+        return this.page(page, wrapper);
     }
 }

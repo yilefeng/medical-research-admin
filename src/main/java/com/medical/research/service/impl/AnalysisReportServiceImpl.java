@@ -24,6 +24,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.OutputStream;
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -80,6 +81,7 @@ public class AnalysisReportServiceImpl extends ServiceImpl<AnalysisReportMapper,
         // 6. 保存报告
         report.setRocImagePath(rocImagePath);
         report.setPdfPath(pdfPath);
+        report.setCreateTime(LocalDateTime.now());
         this.save(report);
 
         // 7. 返回结果
@@ -230,7 +232,7 @@ public class AnalysisReportServiceImpl extends ServiceImpl<AnalysisReportMapper,
         if (reportName != null && !reportName.isEmpty()) {
             wrapper.like(AnalysisReport::getReportName, reportName);
         }
-        wrapper.orderByDesc(AnalysisReport::getCreateTime);
+        wrapper.orderByDesc(AnalysisReport::getId);
         return this.page(page, wrapper);
     }
 }

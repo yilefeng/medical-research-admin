@@ -1,5 +1,6 @@
 package com.medical.research.controller;
 
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.medical.research.entity.ExperimentPlan;
 import com.medical.research.service.ExperimentPlanService;
 import com.medical.research.util.Result;
@@ -59,13 +60,13 @@ public class ExperimentPlanController {
 
     @GetMapping("/list")
     @Operation(summary = "实验方案分页查询", description = "按实验名称模糊查询，分页返回结果")
-    public Result<Object> getExperimentPageList(
+    public Result<IPage<ExperimentPlan>> getExperimentPageList(
             @Parameter(description = "实验名称（模糊查询，可选）") @RequestParam(required = false) String planName,
             @Parameter(description = "页码", required = true, example = "1") @RequestParam Integer pageNum,
             @Parameter(description = "每页条数", required = true, example = "10") @RequestParam Integer pageSize) {
         try {
-            Object data = experimentPlanService.getPageList(planName, pageNum, pageSize);
-            return Result.success("查询成功", data);
+            IPage<ExperimentPlan> pageList = experimentPlanService.getPageList(planName, pageNum, pageSize);
+            return Result.success("查询成功", pageList);
         } catch (Exception e) {
             return Result.error("查询失败：" + e.getMessage());
         }

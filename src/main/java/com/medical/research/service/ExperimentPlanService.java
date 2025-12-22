@@ -1,5 +1,6 @@
 package com.medical.research.service;
 
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.medical.research.entity.ExperimentPlan;
 
@@ -15,7 +16,7 @@ public interface ExperimentPlanService extends IService<ExperimentPlan> {
      * @param pageSize 每页条数
      * @return 分页结果
      */
-    Object getPageList(String planName, Integer pageNum, Integer pageSize);
+    IPage<ExperimentPlan> getPageList(String planName, Integer pageNum, Integer pageSize);
 
     /**
      * 查询所有实验方案（下拉框使用）

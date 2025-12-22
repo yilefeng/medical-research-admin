@@ -1,5 +1,6 @@
 package com.medical.research.controller;
 
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.medical.research.entity.ResearchData;
 import com.medical.research.service.ResearchDataService;
 import com.medical.research.util.Result;
@@ -38,13 +39,13 @@ public class ResearchDataController {
 
     @GetMapping("/list")
     @Operation(summary = "分页查询", description = "按实验ID分页查询科研数据")
-    public Result<Object> getPageList(
+    public Result<Page<ResearchData>> getPageList(
             @Parameter(description = "实验ID（可选）") @RequestParam(required = false) Long experimentId,
             @Parameter(description = "页码", example = "1") @RequestParam Integer pageNum,
             @Parameter(description = "每页条数", example = "10") @RequestParam Integer pageSize) {
         try {
-            Object data = researchDataService.getPageList(experimentId, pageNum, pageSize);
-            return Result.success("查询成功", data);
+            Page<ResearchData> pageList = researchDataService.getPageList(experimentId, pageNum, pageSize);
+            return Result.success("查询成功", pageList);
         } catch (Exception e) {
             return Result.error("查询失败：" + e.getMessage());
         }

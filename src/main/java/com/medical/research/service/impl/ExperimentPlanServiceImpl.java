@@ -17,7 +17,7 @@ import java.util.List;
 public class ExperimentPlanServiceImpl extends ServiceImpl<ExperimentPlanMapper, ExperimentPlan> implements ExperimentPlanService {
 
     @Override
-    public Object getPageList(String planName, Integer pageNum, Integer pageSize) {
+    public IPage<ExperimentPlan> getPageList(String planName, Integer pageNum, Integer pageSize) {
         Page<ExperimentPlan> page = new Page<>(pageNum, pageSize);
         LambdaQueryWrapper<ExperimentPlan> wrapper = new LambdaQueryWrapper<>();
         // 模糊查询实验名称
@@ -25,9 +25,9 @@ public class ExperimentPlanServiceImpl extends ServiceImpl<ExperimentPlanMapper,
             wrapper.like(ExperimentPlan::getPlanName, planName.trim());
         }
         // 按更新时间倒序
-        wrapper.orderByDesc(ExperimentPlan::getUpdateTime);
-        IPage<ExperimentPlan> experimentPage = this.page(page, wrapper);
-        return experimentPage;
+        wrapper.orderByDesc(ExperimentPlan::getId,ExperimentPlan::getUpdateTime);
+//        wrapper.orderByDesc(ExperimentPlan::getId);
+        return this.page(page, wrapper); // 返回IPage类型，包含分页信息和total值
     }
 
     @Override
