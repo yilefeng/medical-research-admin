@@ -118,6 +118,7 @@ public class RocChartUtil {
 
     // 计算ROC曲线的FPR和TPR
     public static double[][] calculateRocData(List<Integer> labels, List<Double> scores) {
+
         // 去重并排序阈值
         List<Double> thresholds = new java.util.ArrayList<>(new java.util.HashSet<>(scores));
         thresholds.sort(java.util.Collections.reverseOrder());
@@ -164,5 +165,22 @@ public class RocChartUtil {
             tpr[i] = rocPoints.get(i)[1];
         }
         return new double[][]{fpr, tpr};
+    }
+
+    // 反转评分列表的方法
+    public static List<Double> invertScores(List<Double> scores) {
+        List<Double> inverted = new ArrayList<>();
+        double maxScore = scores.stream().mapToDouble(Double::doubleValue).max().orElse(1.0);
+        double minScore = scores.stream().mapToDouble(Double::doubleValue).min().orElse(0.0);
+        double range = maxScore - minScore;
+
+        for (Double score : scores) {
+            if (range > 0) {
+                inverted.add(maxScore - score + minScore);
+            } else {
+                inverted.add(1.0 - score);
+            }
+        }
+        return inverted;
     }
 }

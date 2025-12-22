@@ -3,6 +3,8 @@ package com.medical.research.util;
 import java.util.List;
 import java.util.Map;
 
+import static com.medical.research.util.RocChartUtil.invertScores;
+
 public class StatTestUtil {
     public static double calculateAUC(List<Integer> labels, List<Double> scores) {
         List<Double> positiveScores = new java.util.ArrayList<>();
@@ -159,13 +161,15 @@ public class StatTestUtil {
         double pValue = delongResult[5];
 
         // 验证AUC值并确保曲线在对角线上方
-//        if (auc1 < 0.5) {
-//            // 如果AUC<0.5，说明模型表现低于随机猜测，可能需要反转预测
-//            auc1 = 1.0 - auc1;
-//        }
-//        if (auc2 < 0.5) {
-//            auc2 = 1.0 - auc2;
-//        }
+        if (auc1 < 0.5) {
+            // 如果AUC<0.5，说明模型表现低于随机猜测，可能需要反转预测
+            scores1 = RocChartUtil.invertScores(scores1);
+            auc1 = 1.0 - auc1;
+        }
+        if (auc2 < 0.5) {
+            scores2 = RocChartUtil.invertScores(scores2);
+            auc2 = 1.0 - auc2;
+        }
 
         // 计算ROC数据
         double[][] rocData1 = RocChartUtil.calculateRocData(labels, scores1);

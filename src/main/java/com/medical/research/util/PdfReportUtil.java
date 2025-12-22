@@ -139,7 +139,7 @@ public class PdfReportUtil {
         // 原始数据
         document.add(new Paragraph("五、附录：原始科研数据", headingFont));
         document.add(Chunk.NEWLINE);
-        PdfPTable dataTable = new PdfPTable(4);
+        PdfPTable dataTable = new PdfPTable(3);
         dataTable.setWidthPercentage(100);
         dataTable.addCell(new PdfPCell(new Paragraph("真实标签", tableHeaderFont)));
         dataTable.addCell(new PdfPCell(new Paragraph("模型1评分", tableHeaderFont)));
