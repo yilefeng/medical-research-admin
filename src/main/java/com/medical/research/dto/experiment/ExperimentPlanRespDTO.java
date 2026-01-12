@@ -34,9 +34,24 @@ public class ExperimentPlanRespDTO {
     private String experimentDesc;
 
     /**
+     * 创建人
+     */
+    private String owner;
+
+    /**
+     * 创建人ID
+     */
+    private Long ownerId;
+
+    /**
      * 是否公开（0：不公开，1：公开）
      */
     private Boolean isPublic;
+
+    /**
+     * 是否可编辑（0：不可编辑，1：可编辑）
+     */
+    private Boolean isEdit;
 
     /**
      * 状态（1：正常，0：删除）

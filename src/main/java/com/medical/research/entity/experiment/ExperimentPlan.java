@@ -17,31 +17,37 @@ public class ExperimentPlan extends BaseDO {
     /**
      * 实验方案名称
      */
+    @TableField("plan_name")
     private String planName;
 
     /**
      * 研究目的
      */
+    @TableField("research_purpose")
     private String researchPurpose;
 
     /**
      * 模型信息
      */
+    @TableField("model_info")
     private String modelInfo;
 
     /**
      * 实验描述
      */
+    @TableField("experiment_desc")
     private String experimentDesc;
 
     /**
      * 负责人 ID
      */
+    @TableField("owner_id")
     private Long ownerId;
 
     /**
      * 是否公开（0：不公开，1：公开）
      */
+    @TableField("is_public")
     private Boolean isPublic;
 
     /**

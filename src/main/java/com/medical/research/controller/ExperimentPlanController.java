@@ -8,9 +8,12 @@ import com.medical.research.dto.experiment.ExperimentPlanReqDTO;
 import com.medical.research.dto.experiment.ExperimentPlanRespDTO;
 import com.medical.research.entity.experiment.ExperimentPlan;
 import com.medical.research.entity.experiment.ExperimentResearcher;
+import com.medical.research.entity.sys.SysUser;
 import com.medical.research.service.ExperimentPlanService;
 import com.medical.research.service.ExperimentResearcherService;
+import com.medical.research.service.SysUserService;
 import com.medical.research.util.Result;
+import com.medical.research.util.SecurityUserUtil;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -38,6 +41,9 @@ public class ExperimentPlanController {
     @Autowired
     private ExperimentResearcherService experimentResearcherService;
 
+    @Autowired
+    private SysUserService sysUserService;
+
     @PostMapping("/add")
     @Operation(summary = "新增实验方案", description = "创建新的科研实验方案")
     public Result<String> addExperiment(
@@ -45,8 +51,6 @@ public class ExperimentPlanController {
         try {
             ExperimentPlan experimentPlan = new ExperimentPlan();
             BeanUtils.copyProperties(reqDTO, experimentPlan);
-            experimentPlan.setCreateTime(LocalDateTime.now());
-            experimentPlan.setUpdateTime(LocalDateTime.now());
             boolean success = experimentPlanService.save(experimentPlan);
             if (success) {
                 Long generatedId = experimentPlan.getId();
@@ -67,8 +71,6 @@ public class ExperimentPlanController {
         try {
             ExperimentPlan experimentPlan = new ExperimentPlan();
             BeanUtils.copyProperties(reqDTO, experimentPlan);
-            experimentPlan.setCreateTime(LocalDateTime.now());
-            experimentPlan.setUpdateTime(LocalDateTime.now());
             boolean success = experimentPlanService.updateById(experimentPlan);
             if (success) {
                 Long generatedId = experimentPlan.getId();
@@ -93,12 +95,19 @@ public class ExperimentPlanController {
             reqDTO.setPageNum(pageNum);
             reqDTO.setPageSize(pageSize);
             reqDTO.setPlanName(planName);
+
+            Long currentUserId = SecurityUserUtil.getCurrentUserId();
+            reqDTO.setOwnerId(currentUserId);
+            reqDTO.setStatus(ExperimentPlan.Status.NORMAL.getValue());
+
             IPage<ExperimentPlanRespDTO> pageList = experimentPlanService.getPageList(reqDTO);
             // 检查是否有实验记录，避免IN查询为空的情况
             if (pageList.getRecords() != null && !pageList.getRecords().isEmpty()) {
                 List<Long> experimentIds = pageList.getRecords().stream()
                         .map(ExperimentPlanRespDTO::getId)
                         .collect(Collectors.toList());
+
+                List<Long> ownerIdList = pageList.getRecords().stream().map(ExperimentPlanRespDTO::getOwnerId).collect(Collectors.toList());
 
                 List<ExperimentResearcher> researchers = experimentResearcherService.list(
                         new QueryWrapper<ExperimentResearcher>()
@@ -109,11 +118,21 @@ public class ExperimentPlanController {
                 Map<Long, List<ExperimentResearcher>> researcherMap = researchers.stream()
                         .collect(Collectors.groupingBy(ExperimentResearcher::getExperimentId));
 
+                List<SysUser> sysUsers = sysUserService.listByIds(ownerIdList);
+                Map<Long, SysUser> userMap = sysUsers.stream().collect(Collectors.toMap(SysUser::getId, sysUser -> sysUser));
+
                 pageList.getRecords().forEach(plan -> {
                     List<ExperimentResearcher> experimentResearchers = researcherMap.get(plan.getId());
                     if (experimentResearchers != null) {
                         plan.setResearchIds(
                                 experimentResearchers.stream().map(ExperimentResearcher::getResearcherId).collect(Collectors.toList()));
+
+                        if (userMap.containsKey(plan.getOwnerId())) {
+                            plan.setOwner(userMap.get(plan.getOwnerId()).getUsername());
+                        } else {
+                            plan.setOwner("-");
+                        }
+                        plan.setIsEdit(plan.getOwnerId().equals(currentUserId));
                     }
                 });
             } else {

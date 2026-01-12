@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.medical.research.entity.experiment.ExperimentResearcher;
 import com.medical.research.mapper.ExperimentResearcherMapper;
 import com.medical.research.service.ExperimentResearcherService;
+import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.interceptor.TransactionAspectSupport;
 
@@ -26,15 +27,17 @@ public class ExperimentResearcherServiceImpl extends ServiceImpl<ExperimentResea
         List<ExperimentResearcher> existingList = list(new LambdaQueryWrapper<ExperimentResearcher>()
                 .eq(ExperimentResearcher::getExperimentId, experimentId));
 
+        for (ExperimentResearcher existing : existingList) {
+            if (!researcherIds.contains(existing.getResearcherId())) {
+                existing.setStatus(ExperimentResearcher.Status.DELETED.getValue());
+            } else {
+                existing.setStatus(ExperimentResearcher.Status.NORMAL.getValue());
+            }
+        }
+
         Set<Long> existingResearcherIds = existingList.stream()
                 .map(ExperimentResearcher::getResearcherId)
                 .collect(Collectors.toSet());
-
-        // 找出需要删除的记录（存在于现有列表但不在目标列表中的）
-        List<ExperimentResearcher> toUpdate = existingList.stream()
-                .filter(entity -> !researcherIds.contains(entity.getResearcherId()))
-                .peek(entity -> entity.setStatus(ExperimentResearcher.Status.DELETED.getValue()))
-                .collect(Collectors.toList());
 
         // 找出需要新增的记录（存在于目标列表但不在现有列表中的）
         List<ExperimentResearcher> toAdd = researcherIds.stream()
@@ -50,8 +53,8 @@ public class ExperimentResearcherServiceImpl extends ServiceImpl<ExperimentResea
 
         List<ExperimentResearcher> list = new ArrayList<>();
         // 更新需要修改状态的记录
-        if (!toUpdate.isEmpty()) {
-            list.addAll(toUpdate);
+        if (!existingList.isEmpty()) {
+            list.addAll(existingList);
         }
 
         // 新增不存在的记录

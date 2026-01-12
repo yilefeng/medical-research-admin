@@ -38,6 +38,11 @@ public class ExperimentPlanReqDTO extends PageDTO {
     private String experimentDesc;
 
     /**
+     * 创建人ID
+     */
+    private Long ownerId;
+
+    /**
      * 是否公开（0：不公开，1：公开）
      */
     private Boolean isPublic;

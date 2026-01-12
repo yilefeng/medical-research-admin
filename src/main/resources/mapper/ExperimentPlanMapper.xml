@@ -12,6 +12,9 @@
         <if test="req.status != null ">
             AND status = #{req.status}
         </if>
+        <if test="req.ownerId != null">
+            AND owner_id = #{req.ownerId}
+        </if>
         ORDER BY create_time DESC
         LIMIT #{req.pageSize} OFFSET #{req.offset}
     </select>
@@ -23,6 +26,9 @@
         </if>
         <if test="req.status != null ">
             AND status = #{req.status}
+        </if>
+        <if test="req.ownerId != null">
+            AND owner_id = #{req.ownerId}
         </if>
     </select>
 </mapper>
