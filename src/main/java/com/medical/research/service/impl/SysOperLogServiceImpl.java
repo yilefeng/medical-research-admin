@@ -3,7 +3,7 @@ package com.medical.research.service.impl;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.medical.research.entity.SysOperLog;
+import com.medical.research.entity.sys.SysOperLog;
 import com.medical.research.mapper.SysOperLogMapper;
 import com.medical.research.dto.sys.SysOperLogReqDTO;
 import com.medical.research.dto.sys.SysOperLogRespDTO;

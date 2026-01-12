@@ -1,7 +1,7 @@
 package com.medical.research.controller;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.medical.research.entity.ResearchData;
+import com.medical.research.entity.research.ResearchData;
 import com.medical.research.service.ResearchDataService;
 import com.medical.research.util.Result;
 import io.swagger.v3.oas.annotations.Operation;

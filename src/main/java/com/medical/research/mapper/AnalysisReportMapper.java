@@ -1,10 +1,9 @@
 package com.medical.research.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import com.medical.research.entity.AnalysisReport;
+import com.medical.research.entity.analysis.AnalysisReport;
 import com.medical.research.dto.report.AnalysisReportReqDTO;
 import org.apache.ibatis.annotations.Param;
-import org.apache.ibatis.annotations.Select;
 
 import java.util.List;
 

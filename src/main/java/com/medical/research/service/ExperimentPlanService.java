@@ -2,7 +2,7 @@ package com.medical.research.service;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.IService;
-import com.medical.research.entity.ExperimentPlan;
+import com.medical.research.entity.experiment.ExperimentPlan;
 
 import java.util.List;
 

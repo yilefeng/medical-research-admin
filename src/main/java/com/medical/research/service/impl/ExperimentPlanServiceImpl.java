@@ -4,7 +4,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.medical.research.entity.ExperimentPlan;
+import com.medical.research.entity.experiment.ExperimentPlan;
 import com.medical.research.mapper.ExperimentPlanMapper;
 import com.medical.research.service.ExperimentPlanService;
 import org.springframework.stereotype.Service;
@@ -26,8 +26,7 @@ public class ExperimentPlanServiceImpl extends ServiceImpl<ExperimentPlanMapper,
         }
         // 按更新时间倒序
         wrapper.orderByDesc(ExperimentPlan::getId,ExperimentPlan::getUpdateTime);
-//        wrapper.orderByDesc(ExperimentPlan::getId);
-        return this.page(page, wrapper); // 返回IPage类型，包含分页信息和total值
+        return this.page(page, wrapper);
     }
 
     @Override

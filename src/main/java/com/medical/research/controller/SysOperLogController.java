@@ -1,10 +1,8 @@
 package com.medical.research.controller;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.medical.research.dto.sys.SysOperLogReqDTO;
 import com.medical.research.dto.sys.SysOperLogRespDTO;
-import com.medical.research.entity.SysOperLog;
 import com.medical.research.service.SysOperLogService;
 import com.medical.research.util.Result;
 import io.swagger.v3.oas.annotations.Operation;

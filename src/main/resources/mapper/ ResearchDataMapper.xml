@@ -4,7 +4,7 @@
 <mapper namespace="com.medical.research.mapper.ResearchDataMapper">
 
     <select id="selectDataPage" parameterType="com.medical.research.dto.research.ResearchDataReqDTO"
-            resultType="com.medical.research.entity.ResearchData">
+            resultType="com.medical.research.entity.research.ResearchData">
         SELECT * FROM research_data
         WHERE 1=1
         <if test="req.experimentNo != null and req.experimentNo != ''">
@@ -32,7 +32,7 @@
             AND dataset LIKE CONCAT('%', #{req.dataset}, '%')
         </if>
     </select>
-    <select id="selectDataByExperimentNo" resultType="com.medical.research.entity.ResearchData">
+    <select id="selectDataByExperimentNo" resultType="com.medical.research.entity.research.ResearchData">
         SELECT * FROM research_data WHERE experiment_no = #{experimentNo}
     </select>
 </mapper>

@@ -1,12 +1,11 @@
 package com.medical.research.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.medical.research.entity.AnalysisReport;
-import com.medical.research.entity.ExperimentPlan;
-import com.medical.research.entity.ResearchData;
+import com.medical.research.entity.analysis.AnalysisReport;
+import com.medical.research.entity.experiment.ExperimentPlan;
+import com.medical.research.entity.research.ResearchData;
 import com.medical.research.mapper.AnalysisReportMapper;
 import com.medical.research.mapper.ExperimentPlanMapper;
 import com.medical.research.mapper.ResearchDataMapper;
@@ -14,7 +13,6 @@ import com.medical.research.service.AnalysisReportService;
 import com.medical.research.util.PdfReportUtil;
 import com.medical.research.util.RocChartUtil;
 import com.medical.research.util.StatTestUtil;
-import org.apache.commons.lang3.math.NumberUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -45,10 +43,9 @@ public class AnalysisReportServiceImpl extends ServiceImpl<AnalysisReportMapper,
 
     @Override
     public Map<String, Object> generateReport(AnalysisReport report) throws Exception {
-        // 1. 获取关联数据
-        List<Long> dataIdList = Arrays.stream(report.getDataIds().split(","))
-                .map(Long::parseLong).collect(Collectors.toList());
-        List<ResearchData> dataList = researchDataMapper.selectBatchIds(dataIdList);
+
+        List<ResearchData> dataList = researchDataMapper.selectList(new LambdaQueryWrapper<ResearchData>()
+                .eq(ResearchData::getExperimentId, report.getExperimentId()));
         ExperimentPlan plan = experimentPlanMapper.selectById(report.getExperimentId());
 
         // 2. 提取标签和评分
@@ -79,7 +76,6 @@ public class AnalysisReportServiceImpl extends ServiceImpl<AnalysisReportMapper,
         String pdfPath = pdfReportUtil.generateReportPdf(report, plan, dataList, rocImagePath);
 
         // 6. 保存报告
-        report.setRocImagePath(rocImagePath);
         report.setPdfPath(pdfPath);
         report.setCreateTime(LocalDateTime.now());
         this.save(report);
@@ -107,10 +103,9 @@ public class AnalysisReportServiceImpl extends ServiceImpl<AnalysisReportMapper,
     public Map<String, Object> getRocData(Long reportId) {
         AnalysisReport report = this.getById(reportId);
         Map<String, Object> rocData = new HashMap<>();
-        if (report != null && report.getDataIds() != null) {
-            List<Long> dataIdList = Arrays.stream(report.getDataIds().split(","))
-                    .map(Long::parseLong).collect(Collectors.toList());
-            List<ResearchData> dataList = researchDataMapper.selectBatchIds(dataIdList);
+        if (report != null) {
+            List<ResearchData> dataList = researchDataMapper.selectList(new LambdaQueryWrapper<ResearchData>()
+                    .eq(ResearchData::getExperimentId, report.getExperimentId()));
             List<Integer> labels = dataList.stream().map(ResearchData::getTrueLabel).collect(Collectors.toList());
             List<Double> scores1 = dataList.stream().map(ResearchData::getModel1Score).collect(Collectors.toList());
             List<Double> scores2 = dataList.stream().map(ResearchData::getModel2Score).collect(Collectors.toList());

@@ -1,7 +1,8 @@
-package com.medical.research.entity;
+package com.medical.research.entity.sys;
 
 import com.baomidou.mybatisplus.annotation.*;
 import lombok.Data;
+import lombok.Getter;
 
 import java.time.LocalDateTime;
 
@@ -43,4 +44,16 @@ public class SysUser {
     /** 更新时间 */
     @TableField(fill = FieldFill.INSERT_UPDATE)
     private LocalDateTime updateTime;
+
+    @Getter
+    public static enum Status {
+        ENABLED(1, "启用"),
+        DISABLED(0, "禁用");
+        private final Integer code;
+        private final String message;
+        Status(Integer code, String message) {
+            this.code = code;
+            this.message = message;
+        }
+    }
 }

@@ -3,7 +3,6 @@ package com.medical.research.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.medical.research.dto.research.ResearchDataRespDTO;
-import com.medical.research.entity.ResearchData;
 import com.medical.research.entity.StatModel;
 import com.medical.research.dto.stat.StatModelReqDTO;
 import com.medical.research.dto.stat.StatModelRespDTO;

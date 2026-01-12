@@ -2,7 +2,7 @@
 package com.medical.research.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
-import com.medical.research.entity.SysRole;
+import com.medical.research.entity.sys.SysRole;
 import com.medical.research.dto.sys.SysRoleReqDTO;
 import com.medical.research.dto.sys.SysRoleRespDTO;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;

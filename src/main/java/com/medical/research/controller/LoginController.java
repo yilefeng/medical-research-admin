@@ -1,7 +1,7 @@
 package com.medical.research.controller;
 
 import com.medical.research.dto.LoginDTO;
-import com.medical.research.entity.SysUser;
+import com.medical.research.entity.sys.SysUser;
 import com.medical.research.service.SysUserService;
 import com.medical.research.util.JwtUtil;
 import com.medical.research.util.PasswordUtil;
@@ -11,7 +11,6 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.web.bind.annotation.PostMapping;

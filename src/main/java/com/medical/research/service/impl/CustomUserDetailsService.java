@@ -1,6 +1,6 @@
 package com.medical.research.service.impl;
 
-import com.medical.research.entity.SysUser;
+import com.medical.research.entity.sys.SysUser;
 import com.medical.research.service.SysUserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.User;

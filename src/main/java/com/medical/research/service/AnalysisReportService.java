@@ -2,10 +2,7 @@
 package com.medical.research.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
-import com.medical.research.entity.AnalysisReport;
-import com.medical.research.dto.report.AnalysisReportReqDTO;
-import com.medical.research.dto.report.AnalysisReportRespDTO;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.medical.research.entity.analysis.AnalysisReport;
 
 import javax.servlet.http.HttpServletResponse;
 import java.util.Map;

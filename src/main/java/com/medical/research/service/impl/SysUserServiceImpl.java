@@ -1,11 +1,9 @@
 package com.medical.research.service.impl;
 
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.medical.research.dto.sys.SysRoleRespDTO;
-import com.medical.research.entity.SysUser;
-import com.medical.research.entity.SysRole;
+import com.medical.research.entity.sys.SysUser;
 import com.medical.research.mapper.SysUserMapper;
 import com.medical.research.dto.sys.SysUserReqDTO;
 import com.medical.research.dto.sys.SysUserRespDTO;
@@ -18,7 +16,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.time.LocalDateTime;
-import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -160,9 +157,10 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
             return false;
         }
 
-        user.setLastLoginTime(LocalDateTime.now());
-        user.setUpdateTime(LocalDateTime.now());
-
-        return updateById(user);
+        SysUser updateUser = new SysUser();
+        updateUser.setId(id);
+        updateUser.setLastLoginTime(LocalDateTime.now());
+        updateUser.setUpdateTime(LocalDateTime.now());
+        return updateById(updateUser);
     }
 }

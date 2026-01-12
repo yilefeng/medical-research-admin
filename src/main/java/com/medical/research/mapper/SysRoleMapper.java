@@ -1,7 +1,7 @@
 package com.medical.research.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import com.medical.research.entity.SysRole;
+import com.medical.research.entity.sys.SysRole;
 import com.medical.research.dto.sys.SysRoleReqDTO;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;

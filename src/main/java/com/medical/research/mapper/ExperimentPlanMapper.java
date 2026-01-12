@@ -1,7 +1,7 @@
 package com.medical.research.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import com.medical.research.entity.ExperimentPlan;
+import com.medical.research.entity.experiment.ExperimentPlan;
 import com.medical.research.dto.ExperimentPlanReqDTO;
 import org.apache.ibatis.annotations.Param;
 

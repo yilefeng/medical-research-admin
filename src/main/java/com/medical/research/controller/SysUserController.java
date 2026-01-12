@@ -5,7 +5,7 @@ import com.medical.research.dto.sys.SysUserReqDTO;
 import com.medical.research.dto.sys.SysUserRespDTO;
 import com.medical.research.dto.sys.SysUserRoleReqDTO;
 import com.medical.research.dto.sys.SysUserRoleRespDTO;
-import com.medical.research.entity.SysUser;
+import com.medical.research.entity.sys.SysUser;
 import com.medical.research.service.SysUserRoleService;
 import com.medical.research.service.SysUserService;
 import com.medical.research.util.PasswordUtil;

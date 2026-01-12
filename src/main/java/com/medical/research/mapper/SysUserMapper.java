@@ -1,9 +1,8 @@
 package com.medical.research.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import com.medical.research.entity.SysUser;
+import com.medical.research.entity.sys.SysUser;
 import com.medical.research.dto.sys.SysUserReqDTO;
-import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;

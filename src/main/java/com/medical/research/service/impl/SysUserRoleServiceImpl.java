@@ -1,14 +1,13 @@
 package com.medical.research.service.impl;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.medical.research.entity.SysUserRole;
-import com.medical.research.entity.SysRole;
+import com.medical.research.entity.sys.SysUserRole;
+import com.medical.research.entity.sys.SysRole;
 import com.medical.research.mapper.SysRoleMapper;
 import com.medical.research.mapper.SysUserRoleMapper;
 import com.medical.research.dto.sys.SysUserRoleReqDTO;
 import com.medical.research.dto.sys.SysUserRoleRespDTO;
 import com.medical.research.service.SysUserRoleService;
-import com.medical.research.service.SysRoleService;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

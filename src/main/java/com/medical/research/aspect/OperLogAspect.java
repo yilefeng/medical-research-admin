@@ -1,7 +1,7 @@
 package com.medical.research.aspect;
 
 import com.alibaba.fastjson2.JSON;
-import com.medical.research.entity.SysOperLog;
+import com.medical.research.entity.sys.SysOperLog;
 import com.medical.research.service.SysOperLogService;
 import com.medical.research.util.JwtUtil;
 import lombok.RequiredArgsConstructor;

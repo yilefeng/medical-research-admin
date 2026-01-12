@@ -1,10 +1,9 @@
 package com.medical.research.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.medical.research.entity.ResearchData;
+import com.medical.research.entity.research.ResearchData;
 import com.medical.research.mapper.ResearchDataMapper;
 import com.medical.research.service.ResearchDataService;
 import org.apache.commons.csv.CSVFormat;

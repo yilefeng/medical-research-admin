@@ -1,6 +1,6 @@
 package com.medical.research.controller;
 
-import com.medical.research.entity.AnalysisReport;
+import com.medical.research.entity.analysis.AnalysisReport;
 import com.medical.research.service.AnalysisReportService;
 import com.medical.research.util.Result;
 import io.swagger.v3.oas.annotations.Operation;

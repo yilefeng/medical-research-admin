@@ -3,7 +3,7 @@
 
 <mapper namespace="com.medical.research.mapper.ExperimentPlanMapper">
     <select id="selectPlanPage" parameterType="com.medical.research.dto.ExperimentPlanReqDTO"
-        resultType="com.medical.research.entity.ExperimentPlan">
+        resultType="com.medical.research.entity.experiment.ExperimentPlan">
         SELECT * FROM experiment_plan
         WHERE 1=1
         <if test="req.experimentNo != null and req.experimentNo != ''">

@@ -1,7 +1,7 @@
 package com.medical.research.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import com.medical.research.entity.SysOperLog;
+import com.medical.research.entity.sys.SysOperLog;
 import com.medical.research.dto.sys.SysOperLogReqDTO;
 import org.apache.ibatis.annotations.Param;
 

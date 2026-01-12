@@ -3,7 +3,7 @@ package com.medical.research.controller;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.medical.research.dto.sys.SysRoleReqDTO;
 import com.medical.research.dto.sys.SysRoleRespDTO;
-import com.medical.research.entity.SysRole;
+import com.medical.research.entity.sys.SysRole;
 import com.medical.research.service.SysRoleService;
 import com.medical.research.util.Result;
 import io.swagger.v3.oas.annotations.Operation;

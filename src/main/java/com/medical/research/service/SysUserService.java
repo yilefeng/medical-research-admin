@@ -1,7 +1,7 @@
 package com.medical.research.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
-import com.medical.research.entity.SysUser;
+import com.medical.research.entity.sys.SysUser;
 import com.medical.research.dto.sys.SysUserReqDTO;
 import com.medical.research.dto.sys.SysUserRespDTO;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;

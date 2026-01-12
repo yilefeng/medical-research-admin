@@ -8,12 +8,12 @@
         FROM sys_user_role
         WHERE user_id = #{userId}
     </delete>
-    <select id="selectByUserId" resultType="com.medical.research.entity.SysUserRole">
+    <select id="selectByUserId" resultType="com.medical.research.entity.sys.SysUserRole">
         SELECT *
         FROM sys_user_role
         WHERE user_id = #{userId}
     </select>
-    <select id="selectByRoleId" resultType="com.medical.research.entity.SysUserRole">
+    <select id="selectByRoleId" resultType="com.medical.research.entity.sys.SysUserRole">
         SELECT *
         FROM sys_user_role
         WHERE role_id = #{roleId}

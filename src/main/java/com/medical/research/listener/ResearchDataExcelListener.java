@@ -4,15 +4,13 @@ import com.alibaba.excel.context.AnalysisContext;
 import com.alibaba.excel.event.AnalysisEventListener;
 import com.alibaba.excel.exception.ExcelDataConvertException;
 import com.alibaba.fastjson2.JSON;
-import com.medical.research.dto.research.ResearchDataRespDTO;
-import com.medical.research.entity.ResearchData;
+import com.medical.research.entity.research.ResearchData;
 import com.medical.research.service.ResearchDataService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 /**

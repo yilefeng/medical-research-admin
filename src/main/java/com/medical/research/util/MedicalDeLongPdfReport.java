@@ -6,8 +6,9 @@ import com.itextpdf.text.pdf.PdfPCell;
 import com.itextpdf.text.pdf.PdfPTable;
 import com.itextpdf.text.pdf.PdfWriter;
 
-import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -194,7 +195,7 @@ public class MedicalDeLongPdfReport {
         // 1. 创建PDF文档对象（设置页面大小、边距）
         Document document = new Document(PageSize.A4, 50, 50, 50, 50);
         // 2. 创建PDF写入器
-        PdfWriter.getInstance(document, new FileOutputStream(outputPath));
+        PdfWriter.getInstance(document, Files.newOutputStream(Paths.get(outputPath)));
         // 3. 打开文档
         document.open();
 

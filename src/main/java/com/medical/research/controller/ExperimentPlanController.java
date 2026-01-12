@@ -1,7 +1,7 @@
 package com.medical.research.controller;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.medical.research.entity.ExperimentPlan;
+import com.medical.research.entity.experiment.ExperimentPlan;
 import com.medical.research.service.ExperimentPlanService;
 import com.medical.research.util.Result;
 import io.swagger.v3.oas.annotations.Operation;

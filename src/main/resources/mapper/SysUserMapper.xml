@@ -3,7 +3,7 @@
 
 <mapper namespace="com.medical.research.mapper.SysUserMapper">
 
-    <select id="selectUserByUsername" resultType="com.medical.research.entity.SysUser">
+    <select id="selectUserByUsername" resultType="com.medical.research.entity.sys.SysUser">
         SELECT * FROM sys_user WHERE username = #{username}
     </select>
 
@@ -22,7 +22,7 @@
         </where>
     </select>
 
-    <select id="selectUserPage" resultType="com.medical.research.entity.SysUser">
+    <select id="selectUserPage" resultType="com.medical.research.entity.sys.SysUser">
         SELECT * FROM sys_user
         <where>
             <if test="req.username != null">

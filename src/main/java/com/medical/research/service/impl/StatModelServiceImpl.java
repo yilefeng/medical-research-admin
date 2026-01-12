@@ -4,7 +4,6 @@ import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.JSONObject;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.medical.research.dto.research.ResearchDataRespDTO;
-import com.medical.research.entity.ResearchData;
 import com.medical.research.entity.StatModel;
 import com.medical.research.mapper.StatModelMapper;
 import com.medical.research.dto.stat.StatModelReqDTO;
@@ -22,7 +21,6 @@ import org.springframework.util.StringUtils;
 
 import javax.annotation.Resource;
 import java.time.LocalDateTime;
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
