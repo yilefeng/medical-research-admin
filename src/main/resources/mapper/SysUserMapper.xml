@@ -35,5 +35,6 @@
                 AND status = #{req.status}
             </if>
         </where>
+        LIMIT #{req.pageSize} OFFSET #{req.offset}
     </select>
 </mapper>

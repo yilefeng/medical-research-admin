@@ -1,5 +1,6 @@
 package com.medical.research.controller;
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.medical.research.dto.sys.SysUserReqDTO;
 import com.medical.research.dto.sys.SysUserRespDTO;
@@ -21,6 +22,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.validation.Valid;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * 系统用户控制器
@@ -61,6 +63,24 @@ public class SysUserController {
         req.setPageNum(pageNum);
         req.setPageSize(pageSize);
         IPage<SysUserRespDTO> result = sysUserService.getUserPage(req);
+        return Result.success("查询成功", result);
+    }
+
+    /**
+     * 查询用户
+     */
+    @GetMapping("/list")
+    @Operation(
+            summary = "查询用户"
+    )
+    public Result<List<SysUserRespDTO>> getUserList() {
+        List<SysUser> list = sysUserService.list(new QueryWrapper<>());
+        List<SysUserRespDTO> result = list.stream().map(user -> {
+            SysUserRespDTO sysUserRespDTO = new SysUserRespDTO();
+            sysUserRespDTO.setId(user.getId());
+            sysUserRespDTO.setUsername(user.getUsername());
+            return sysUserRespDTO;
+        }).collect(Collectors.toList());
         return Result.success("查询成功", result);
     }
 
