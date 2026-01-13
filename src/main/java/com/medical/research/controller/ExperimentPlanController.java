@@ -1,9 +1,8 @@
 package com.medical.research.controller;
 
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.medical.research.dto.experiment.ExperimentPlanReqDTO;
 import com.medical.research.dto.experiment.ExperimentPlanRespDTO;
 import com.medical.research.entity.experiment.ExperimentPlan;
@@ -21,7 +20,6 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -51,6 +49,8 @@ public class ExperimentPlanController {
         try {
             ExperimentPlan experimentPlan = new ExperimentPlan();
             BeanUtils.copyProperties(reqDTO, experimentPlan);
+            Long currentUserId = SecurityUserUtil.getCurrentUserId();
+            experimentPlan.setOwnerId(currentUserId);
             boolean success = experimentPlanService.save(experimentPlan);
             if (success) {
                 Long generatedId = experimentPlan.getId();
@@ -71,13 +71,18 @@ public class ExperimentPlanController {
         try {
             ExperimentPlan experimentPlan = new ExperimentPlan();
             BeanUtils.copyProperties(reqDTO, experimentPlan);
-            boolean success = experimentPlanService.updateById(experimentPlan);
+
+            Long currentUserId = SecurityUserUtil.getCurrentUserId();
+            boolean success = experimentPlanService.update(experimentPlan,
+                    new QueryWrapper<ExperimentPlan>()
+                            .eq("id", reqDTO.getId())
+                            .eq("owner_id", currentUserId));
             if (success) {
                 Long generatedId = experimentPlan.getId();
                 experimentResearcherService.saveResearcher(generatedId, reqDTO.getResearchIds());
                 return Result.success("实验方案编辑成功");
             } else {
-                return Result.error("实验方案编辑失败（数据不存在）");
+                return Result.error("实验方案编辑失败（数据不存在或无权限）");
             }
         } catch (Exception e) {
             return Result.error("编辑失败：" + e.getMessage());
@@ -178,11 +183,16 @@ public class ExperimentPlanController {
     public Result<String> deleteExperiment(
             @Parameter(description = "实验方案ID", required = true) @PathVariable Long id) {
         try {
-            boolean success = experimentPlanService.removeById(id);
+            Long currentUserId = SecurityUserUtil.getCurrentUserId();
+            UpdateWrapper<ExperimentPlan> updateWrapper = new UpdateWrapper<>();
+            updateWrapper.eq("owner_id", currentUserId)
+                    .eq("id", id)
+                    .set("status", ExperimentPlan.Status.DELETED.getValue());
+            boolean success = experimentPlanService.update(updateWrapper);
             if (success) {
                 return Result.success("实验方案删除成功");
             } else {
-                return Result.error("实验方案删除失败（数据不存在或存在关联数据）");
+                return Result.error("实验方案删除失败（数据不存在或无权限）");
             }
         } catch (Exception e) {
             return Result.error("删除失败：" + e.getMessage());

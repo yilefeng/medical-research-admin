@@ -4,31 +4,45 @@
 <mapper namespace="com.medical.research.mapper.ExperimentPlanMapper">
     <select id="selectPlanPage" parameterType="com.medical.research.dto.experiment.ExperimentPlanReqDTO"
         resultType="com.medical.research.entity.experiment.ExperimentPlan">
-        SELECT * FROM experiment_plan
-        WHERE 1=1
-        <if test="req.planName != null and req.planName != ''">
-            AND plan_name LIKE CONCAT('%', #{req.planName}, '%')
-        </if>
-        <if test="req.status != null ">
-            AND status = #{req.status}
-        </if>
-        <if test="req.ownerId != null">
-            AND owner_id = #{req.ownerId}
-        </if>
+        SELECT * FROM experiment_plan ep
+        <where>
+            <if test="req.planName != null and req.planName != ''">
+                AND plan_name LIKE CONCAT('%', #{req.planName}, '%')
+            </if>
+            <if test="req.status != null ">
+                AND status = #{req.status}
+            </if>
+            <if test="req.ownerId != null">
+                AND (owner_id = #{req.ownerId}
+                OR EXISTS (
+                SELECT 1
+                FROM experiment_researcher er
+                WHERE er.experiment_id = ep.id
+                AND er.researcher_id = #{req.ownerId}
+                ))
+            </if>
+        </where>
         ORDER BY create_time DESC
         LIMIT #{req.pageSize} OFFSET #{req.offset}
     </select>
     <select id="selectPlanCount" resultType="java.lang.Long">
-        SELECT count(1) FROM experiment_plan
-        WHERE 1=1
-        <if test="req.planName != null and req.planName != ''">
-            AND plan_name LIKE CONCAT('%', #{req.planName}, '%')
-        </if>
-        <if test="req.status != null ">
-            AND status = #{req.status}
-        </if>
-        <if test="req.ownerId != null">
-            AND owner_id = #{req.ownerId}
-        </if>
+        SELECT count(1) FROM experiment_plan ep
+        <where>
+            <if test="req.planName != null and req.planName != ''">
+                AND plan_name LIKE CONCAT('%', #{req.planName}, '%')
+            </if>
+            <if test="req.status != null ">
+                AND status = #{req.status}
+            </if>
+            <if test="req.ownerId != null">
+                AND (owner_id = #{req.ownerId}
+                OR EXISTS (
+                SELECT 1
+                FROM experiment_researcher er
+                WHERE er.experiment_id = ep.id
+                AND er.researcher_id = #{req.ownerId}
+                ))
+            </if>
+        </where>
     </select>
 </mapper>

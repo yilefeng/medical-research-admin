@@ -1,6 +1,7 @@
 package com.medical.research.controller;
 
 import com.medical.research.dto.LoginDTO;
+import com.medical.research.dto.sys.SysUserRespDTO;
 import com.medical.research.entity.sys.SysUser;
 import com.medical.research.service.SysUserService;
 import com.medical.research.util.JwtUtil;
@@ -11,6 +12,7 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.BeanUtils;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -74,12 +76,16 @@ public class LoginController {
         UserDetails userDetails = userDetailsService.loadUserByUsername(user.getUsername());
         String token = jwtUtil.generateToken(userDetails);
 
+        SysUserRespDTO userRespDTO = new SysUserRespDTO();
+        BeanUtils.copyProperties(user, userRespDTO);
+
+        userRespDTO.setRoleCode(sysUserService.getUserById(user.getId()).getRoleCode());
+
         // 5. 构建返回结果
         Map<String, Object> result = new HashMap<>();
         result.put("token", token);
-        result.put("user", user);
+        result.put("user", userRespDTO);
         log.info("用户{}登录成功", user.getUsername());
-
         return Result.success("登录成功", result);
     }
 }
