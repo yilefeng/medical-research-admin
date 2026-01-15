@@ -21,8 +21,8 @@ public class CustomUserDetailsService implements UserDetailsService {
      */
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        SysUser user = sysUserService.getUserByUsername(username.substring(username.indexOf("_") +1));
-        return User.withUsername(user.getId() + "_" + user.getUsername())
+        SysUser user = sysUserService.getUserByUsername(username);
+        return User.withUsername(user.getUsername())
                 .password(user.getPassword())
                 .roles(sysUserService.getUserById(user.getId()).getRoleCode())
                 .build();

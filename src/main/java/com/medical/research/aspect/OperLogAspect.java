@@ -2,7 +2,9 @@ package com.medical.research.aspect;
 
 import com.alibaba.fastjson2.JSON;
 import com.medical.research.entity.sys.SysOperLog;
+import com.medical.research.entity.sys.SysUser;
 import com.medical.research.service.SysOperLogService;
+import com.medical.research.service.SysUserService;
 import com.medical.research.util.JwtUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -29,10 +31,12 @@ public class OperLogAspect {
     private final SysOperLogService operLogService;
     private final JwtUtil jwtUtil;
     private final UserDetailsService userDetailsService;
+    private final SysUserService sysUserService;
 
     // 定义切点：所有controller包下的方法
     @Pointcut("execution(* com.medical.research.controller..*(..))")
-    public void operLogPointcut() {}
+    public void operLogPointcut() {
+    }
 
     // 后置通知：记录日志
     @AfterReturning(pointcut = "operLogPointcut()", returning = "result")
@@ -48,11 +52,11 @@ public class OperLogAspect {
 
             String username = jwtUtil.extractUsername(token);
             UserDetails userDetails = userDetailsService.loadUserByUsername(username);
-            Long userId = Long.parseLong(userDetails.getUsername().split("_")[0]); // 实际项目需从token解析用户ID
+            SysUser user = sysUserService.getUserByUsername(userDetails.getUsername());
 
             // 构建日志对象
             SysOperLog operLog = new SysOperLog();
-            operLog.setUserId(userId);
+            operLog.setUserId(user.getId());
             operLog.setUsername(username);
             operLog.setOperIp(request.getRemoteAddr());
             operLog.setOperTime(LocalDateTime.now());

@@ -49,7 +49,8 @@ public class ExperimentPlanController {
         try {
             ExperimentPlan experimentPlan = new ExperimentPlan();
             BeanUtils.copyProperties(reqDTO, experimentPlan);
-            Long currentUserId = SecurityUserUtil.getCurrentUserId();
+            String username = SecurityUserUtil.getCurrentUsername();
+            Long currentUserId = sysUserService.getUserByUsername(username).getId();
             experimentPlan.setOwnerId(currentUserId);
             boolean success = experimentPlanService.save(experimentPlan);
             if (success) {
@@ -72,7 +73,8 @@ public class ExperimentPlanController {
             ExperimentPlan experimentPlan = new ExperimentPlan();
             BeanUtils.copyProperties(reqDTO, experimentPlan);
 
-            Long currentUserId = SecurityUserUtil.getCurrentUserId();
+            String username = SecurityUserUtil.getCurrentUsername();
+            Long currentUserId = sysUserService.getUserByUsername(username).getId();
             boolean success = experimentPlanService.update(experimentPlan,
                     new QueryWrapper<ExperimentPlan>()
                             .eq("id", reqDTO.getId())
@@ -101,7 +103,8 @@ public class ExperimentPlanController {
             reqDTO.setPageSize(pageSize);
             reqDTO.setPlanName(planName);
 
-            Long currentUserId = SecurityUserUtil.getCurrentUserId();
+            String username = SecurityUserUtil.getCurrentUsername();
+            Long currentUserId = sysUserService.getUserByUsername(username).getId();
             reqDTO.setOwnerId(currentUserId);
             reqDTO.setStatus(ExperimentPlan.Status.NORMAL.getValue());
 
@@ -183,7 +186,8 @@ public class ExperimentPlanController {
     public Result<String> deleteExperiment(
             @Parameter(description = "实验方案ID", required = true) @PathVariable Long id) {
         try {
-            Long currentUserId = SecurityUserUtil.getCurrentUserId();
+            String username = SecurityUserUtil.getCurrentUsername();
+            Long currentUserId = sysUserService.getUserByUsername(username).getId();
             UpdateWrapper<ExperimentPlan> updateWrapper = new UpdateWrapper<>();
             updateWrapper.eq("owner_id", currentUserId)
                     .eq("id", id)
