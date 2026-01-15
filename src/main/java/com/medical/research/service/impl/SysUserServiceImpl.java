@@ -9,6 +9,7 @@ import com.medical.research.dto.sys.SysUserReqDTO;
 import com.medical.research.dto.sys.SysUserRespDTO;
 import com.medical.research.service.SysUserService;
 import com.medical.research.service.SysRoleService;
+import org.jetbrains.annotations.Nullable;
 import org.springframework.beans.BeanUtils;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -108,25 +109,29 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
     @Override
     public SysUserRespDTO getUserById(Long id) {
         SysUser user = getById(id);
+        return getSysUserRespDTO(user);
+    }
+
+    @Override
+    public SysUserRespDTO getUserByUsername(String username) {
+        SysUser user = sysUserMapper.selectUserByUsername(username);
+        return getSysUserRespDTO(user);
+    }
+
+    @Nullable
+    private SysUserRespDTO getSysUserRespDTO(SysUser user) {
         if (user == null) {
             return null;
         }
 
         SysUserRespDTO resp = new SysUserRespDTO();
         BeanUtils.copyProperties(user, resp);
-
         // 查询角色名称
         List<SysRoleRespDTO> role = sysRoleService.getRolesByUserId(user.getId());
         if (role != null) {
             resp.setRoleCode(role.get(0).getRoleCode());
         }
-
         return resp;
-    }
-
-    @Override
-    public SysUser getUserByUsername(String username) {
-        return sysUserMapper.selectUserByUsername(username);
     }
 
     @Override

@@ -45,12 +45,13 @@ public class ResearchDataServiceImpl extends ServiceImpl<ResearchDataMapper, Res
     }
 
     @Override
-    public Page<ResearchData> getPageList(Long experimentId, Integer pageNum, Integer pageSize) {
+    public Page<ResearchData> getPageList(List<Long> experimentIdList, Integer pageNum, Integer pageSize) {
+        if (experimentIdList == null || experimentIdList.isEmpty()) {
+            return new Page<>();
+        }
         Page<ResearchData> page = new Page<>(pageNum, pageSize);
         LambdaQueryWrapper<ResearchData> wrapper = new LambdaQueryWrapper<>();
-        if (experimentId != null) {
-            wrapper.eq(ResearchData::getExperimentId, experimentId);
-        }
+        wrapper.in(ResearchData::getExperimentId, experimentIdList);
         wrapper.orderByDesc(ResearchData::getId);
         return this.page(page, wrapper);
     }

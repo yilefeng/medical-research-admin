@@ -2,6 +2,7 @@ package com.medical.research.exception;
 
 import com.medical.research.util.Result;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.validation.BindException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -23,7 +24,7 @@ public class GlobalExceptionHandler {
      */
     @ExceptionHandler(BusinessException.class)
     public Result<?> handleBusinessException(BusinessException e, HttpServletRequest request) {
-        log.error("业务异常: {}，请求URI: {}", e.getMessage(), request.getRequestURI());
+        log.error("业务异常: {}，请求URI: {}", ExceptionUtils.getStackTrace(e), request.getRequestURI());
         return Result.error(e.getCode(), e.getMessage());
     }
 
@@ -38,7 +39,7 @@ public class GlobalExceptionHandler {
         } else if (e instanceof MethodArgumentNotValidException) {
             msg = ((MethodArgumentNotValidException) e).getFieldError().getDefaultMessage();
         }
-        log.error("参数校验异常: {}", msg);
+        log.error("参数校验异常: {}", ExceptionUtils.getStackTrace(e));
         return Result.error(400, msg);
     }
 
@@ -47,7 +48,7 @@ public class GlobalExceptionHandler {
      */
     @ExceptionHandler(AccessDeniedException.class)
     public Result<?> handleAccessDeniedException(AccessDeniedException e) {
-        log.error("权限不足: {}", e.getMessage());
+        log.error("权限不足: {}", ExceptionUtils.getStackTrace(e));
         return Result.error(403, "权限不足，无法执行该操作");
     }
 
@@ -56,7 +57,7 @@ public class GlobalExceptionHandler {
      */
     @ExceptionHandler(NoHandlerFoundException.class)
     public Result<?> handleNoHandlerFoundException(NoHandlerFoundException e) {
-        log.error("接口不存在: {}", e.getMessage());
+        log.error("接口不存在: {}", ExceptionUtils.getStackTrace(e));
         return Result.error(404, "请求的接口不存在");
     }
 
@@ -65,7 +66,7 @@ public class GlobalExceptionHandler {
      */
     @ExceptionHandler(Exception.class)
     public Result<?> handleException(Exception e, HttpServletRequest request) {
-        log.error("系统异常: {}，请求URI: {}", e.getMessage(), request.getRequestURI(), e);
+        log.error("系统异常: {}，请求URI: {}", ExceptionUtils.getStackTrace(e), request.getRequestURI());
         return Result.error(500, "系统内部异常，请联系管理员");
     }
 }

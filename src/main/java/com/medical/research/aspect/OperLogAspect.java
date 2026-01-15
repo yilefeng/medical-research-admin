@@ -1,6 +1,7 @@
 package com.medical.research.aspect;
 
 import com.alibaba.fastjson2.JSON;
+import com.medical.research.dto.sys.SysUserRespDTO;
 import com.medical.research.entity.sys.SysOperLog;
 import com.medical.research.entity.sys.SysUser;
 import com.medical.research.service.SysOperLogService;
@@ -52,7 +53,7 @@ public class OperLogAspect {
 
             String username = jwtUtil.extractUsername(token);
             UserDetails userDetails = userDetailsService.loadUserByUsername(username);
-            SysUser user = sysUserService.getUserByUsername(userDetails.getUsername());
+            SysUserRespDTO user = sysUserService.getUserByUsername(userDetails.getUsername());
 
             // 构建日志对象
             SysOperLog operLog = new SysOperLog();

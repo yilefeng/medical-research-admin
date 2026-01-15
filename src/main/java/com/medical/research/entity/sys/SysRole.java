@@ -47,4 +47,7 @@ public class SysRole {
             this.message = message;
         }
     }
+
+    public static final String ROLE_ADMIN_CODE = "admin";
+    public static final String ROLE_RESEARCHER_CODE = "researcher";
 }

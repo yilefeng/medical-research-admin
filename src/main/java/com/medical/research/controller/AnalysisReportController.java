@@ -2,6 +2,8 @@ package com.medical.research.controller;
 
 import com.medical.research.entity.analysis.AnalysisReport;
 import com.medical.research.service.AnalysisReportService;
+import com.medical.research.service.ExperimentPlanService;
+import com.medical.research.service.SysUserService;
 import com.medical.research.util.Result;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -22,11 +24,15 @@ public class AnalysisReportController {
     @Autowired
     private AnalysisReportService analysisReportService;
 
+    @Autowired
+    private ExperimentPlanService experimentPlanService;
+
     @PostMapping("/generate")
     @Operation(summary = "生成分析报告", description = "生成DeLong/AUC报告及ROC图")
     public Result<Map<String, Object>> generateReport(
             @Parameter(description = "报告参数", required = true) @RequestBody AnalysisReport report) {
         try {
+            experimentPlanService.checkRightExperimentPlan(report.getExperimentId());
             Map<String, Object> result = analysisReportService.generateReport(report);
             return Result.success("报告生成成功", result);
         } catch (Exception e) {

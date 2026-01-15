@@ -18,4 +18,12 @@ public interface ExperimentPlanMapper extends BaseMapper<ExperimentPlan> {
      * 查询实验方案总数
      */
     Long selectPlanCount(@Param("req") ExperimentPlanReqDTO req);
+
+    /**
+     * 判断用户是否已经加入
+     * @param id
+     * @param ownerId
+     * @return
+     */
+    Integer existJoin(@Param("id") Long id, @Param("ownerId") Long ownerId);
 }

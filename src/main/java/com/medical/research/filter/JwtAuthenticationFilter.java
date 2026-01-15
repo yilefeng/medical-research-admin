@@ -24,6 +24,7 @@ import java.io.IOException;
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtUtil jwtUtil;
+
     private final UserDetailsService userDetailsService;
 
     // Token请求头名称（默认Authorization，格式：Bearer <token>）

@@ -6,10 +6,12 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.medical.research.entity.analysis.AnalysisReport;
 import com.medical.research.entity.experiment.ExperimentPlan;
 import com.medical.research.entity.research.ResearchData;
+import com.medical.research.exception.BusinessException;
 import com.medical.research.mapper.AnalysisReportMapper;
 import com.medical.research.mapper.ExperimentPlanMapper;
 import com.medical.research.mapper.ResearchDataMapper;
 import com.medical.research.service.AnalysisReportService;
+import com.medical.research.service.ExperimentPlanService;
 import com.medical.research.util.PdfReportUtil;
 import com.medical.research.util.RocChartUtil;
 import com.medical.research.util.StatTestUtil;
@@ -23,7 +25,10 @@ import java.io.FileInputStream;
 import java.io.OutputStream;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -40,6 +45,9 @@ public class AnalysisReportServiceImpl extends ServiceImpl<AnalysisReportMapper,
 
     @Value("${custom.pdf.save-path:/data1/pdf}")
     private String pdfSavePath;
+
+    @Autowired
+    private ExperimentPlanService experimentPlanService;
 
     @Override
     public Map<String, Object> generateReport(AnalysisReport report) throws Exception {
@@ -67,7 +75,7 @@ public class AnalysisReportServiceImpl extends ServiceImpl<AnalysisReportMapper,
 
         report.setAuc1(BigDecimal.valueOf(auc1));
         report.setAuc2(BigDecimal.valueOf(auc2));
-        report.setAucDiff(BigDecimal.valueOf((double) statResult.get("aucDiff")) );
+        report.setAucDiff(BigDecimal.valueOf((double) statResult.get("aucDiff")));
         report.setStdErr(BigDecimal.valueOf((double) statResult.get("stdErr")));
         report.setZValue(BigDecimal.valueOf((double) statResult.get("zValue")));
         report.setPValue(BigDecimal.valueOf((double) statResult.get("pValue")));
@@ -221,13 +229,26 @@ public class AnalysisReportServiceImpl extends ServiceImpl<AnalysisReportMapper,
     }
 
     // 报告分页查询（供报告管理模块调用）
-    public Object getReportPageList(String reportName, Integer pageNum, Integer pageSize) {
+    public Object getReportPageList(List<Long> experimentIds, String reportName, Integer pageNum, Integer pageSize) {
+        if (experimentIds == null || experimentIds.isEmpty()) {
+            return new Page<>();
+        }
         Page<AnalysisReport> page = new Page<>(pageNum, pageSize);
         LambdaQueryWrapper<AnalysisReport> wrapper = new LambdaQueryWrapper<>();
         if (reportName != null && !reportName.isEmpty()) {
             wrapper.like(AnalysisReport::getReportName, reportName);
+            wrapper.in(AnalysisReport::getExperimentId, experimentIds);
         }
         wrapper.orderByDesc(AnalysisReport::getId);
         return this.page(page, wrapper);
+    }
+
+    @Override
+    public void checkReport(Long reportId) {
+        AnalysisReport report = getById(reportId);
+        if (report == null) {
+            throw new BusinessException("报告不存在");
+        }
+        experimentPlanService.checkRightExperimentPlan(report.getExperimentId());
     }
 }

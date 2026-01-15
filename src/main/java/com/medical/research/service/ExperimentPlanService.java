@@ -22,4 +22,17 @@ public interface ExperimentPlanService extends IService<ExperimentPlan> {
      * @return 实验方案列表
      */
     List<ExperimentPlan> getAllList();
+
+    /**
+     * 根据用户ID查询所有实验方案（下拉框使用）
+     * @return 实验方案列表
+     */
+    List<ExperimentPlan> getAllListByUserId(Long userId);
+
+    /**
+     * 校验用户是否有权限查看实验方案
+     * @param planId
+     * @return
+     */
+    void checkRightExperimentPlan(Long planId);
 }

@@ -5,8 +5,10 @@ import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.medical.research.dto.experiment.ExperimentPlanReqDTO;
 import com.medical.research.dto.experiment.ExperimentPlanRespDTO;
+import com.medical.research.dto.sys.SysUserRespDTO;
 import com.medical.research.entity.experiment.ExperimentPlan;
 import com.medical.research.entity.experiment.ExperimentResearcher;
+import com.medical.research.entity.sys.SysRole;
 import com.medical.research.entity.sys.SysUser;
 import com.medical.research.service.ExperimentPlanService;
 import com.medical.research.service.ExperimentResearcherService;
@@ -104,8 +106,10 @@ public class ExperimentPlanController {
             reqDTO.setPlanName(planName);
 
             String username = SecurityUserUtil.getCurrentUsername();
-            Long currentUserId = sysUserService.getUserByUsername(username).getId();
-            reqDTO.setOwnerId(currentUserId);
+            SysUserRespDTO user = sysUserService.getUserByUsername(username);
+            if (!user.getRoleCode().equals(SysRole.ROLE_ADMIN_CODE)) {
+                reqDTO.setOwnerId(user.getId());
+            }
             reqDTO.setStatus(ExperimentPlan.Status.NORMAL.getValue());
 
             IPage<ExperimentPlanRespDTO> pageList = experimentPlanService.getPageList(reqDTO);
@@ -116,7 +120,6 @@ public class ExperimentPlanController {
                         .collect(Collectors.toList());
 
                 List<Long> ownerIdList = pageList.getRecords().stream().map(ExperimentPlanRespDTO::getOwnerId).collect(Collectors.toList());
-
                 List<ExperimentResearcher> researchers = experimentResearcherService.list(
                         new QueryWrapper<ExperimentResearcher>()
                                 .in("experiment_id", experimentIds)
@@ -140,7 +143,7 @@ public class ExperimentPlanController {
                         } else {
                             plan.setOwner("-");
                         }
-                        plan.setIsEdit(plan.getOwnerId().equals(currentUserId));
+                        plan.setIsEdit(plan.getOwnerId().equals(user.getId()) || user.getRoleCode().equals(SysRole.ROLE_ADMIN_CODE));
                     }
                 });
             } else {
@@ -154,22 +157,12 @@ public class ExperimentPlanController {
         }
     }
 
-    @GetMapping("/all")
-    @Operation(summary = "查询所有实验方案", description = "返回所有实验方案（用于前端下拉框选择）")
-    public Result<List<ExperimentPlan>> getAllExperimentList() {
-        try {
-            List<ExperimentPlan> list = experimentPlanService.getAllList();
-            return Result.success("查询成功", list);
-        } catch (Exception e) {
-            return Result.error("查询失败：" + e.getMessage());
-        }
-    }
-
     @GetMapping("/{id}")
     @Operation(summary = "按ID查询实验方案", description = "通过实验ID查询详情")
     public Result<ExperimentPlan> getExperimentById(
             @Parameter(description = "实验方案ID", required = true) @PathVariable Long id) {
         try {
+            experimentPlanService.checkRightExperimentPlan(id);
             ExperimentPlan experimentPlan = experimentPlanService.getById(id);
             if (experimentPlan != null) {
                 return Result.success("查询成功", experimentPlan);

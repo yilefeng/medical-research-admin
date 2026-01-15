@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.extension.service.IService;
 import com.medical.research.entity.analysis.AnalysisReport;
 
 import javax.servlet.http.HttpServletResponse;
+import java.util.List;
 import java.util.Map;
 
 public interface AnalysisReportService extends IService<AnalysisReport> {
@@ -17,6 +18,8 @@ public interface AnalysisReportService extends IService<AnalysisReport> {
     void previewRocImage(Long id, HttpServletResponse response) throws Exception;
     boolean deleteReportWithFile(Long id);
 
-    Object getReportPageList(String reportName, Integer pageNum, Integer pageSize);
+    Object getReportPageList(List<Long> experimentIds, String reportName, Integer pageNum, Integer pageSize);
+
+    void checkReport(Long reportId) throws Exception;
 }
 

@@ -1,5 +1,6 @@
 package com.medical.research.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.medical.research.entity.sys.SysUser;
 import com.medical.research.service.SysUserService;
 import lombok.RequiredArgsConstructor;
@@ -21,7 +22,7 @@ public class CustomUserDetailsService implements UserDetailsService {
      */
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        SysUser user = sysUserService.getUserByUsername(username);
+        SysUser user = sysUserService.getOne(new QueryWrapper<SysUser>().eq("username", username));
         return User.withUsername(user.getUsername())
                 .password(user.getPassword())
                 .roles(sysUserService.getUserById(user.getId()).getRoleCode())

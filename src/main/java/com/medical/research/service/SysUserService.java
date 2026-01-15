@@ -36,7 +36,7 @@ public interface SysUserService extends IService<SysUser> {
     /**
      * 根据用户名查询用户
      */
-    SysUser getUserByUsername(String username);
+    SysUserRespDTO getUserByUsername(String username);
 
     /**
      * 重置用户密码

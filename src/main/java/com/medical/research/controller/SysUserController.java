@@ -2,15 +2,13 @@ package com.medical.research.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.medical.research.dto.sys.SysUserReqDTO;
-import com.medical.research.dto.sys.SysUserRespDTO;
-import com.medical.research.dto.sys.SysUserRoleReqDTO;
-import com.medical.research.dto.sys.SysUserRoleRespDTO;
+import com.medical.research.dto.sys.*;
 import com.medical.research.entity.sys.SysUser;
 import com.medical.research.service.SysUserRoleService;
 import com.medical.research.service.SysUserService;
 import com.medical.research.util.PasswordUtil;
 import com.medical.research.util.Result;
+import com.medical.research.util.SecurityUserUtil;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -122,13 +120,12 @@ public class SysUserController {
         // 2. 创建用户（密码默认123456，MD5加密）
         SysUser user = new SysUser();
         user.setUsername(userDTO.getUsername());
-        user.setPassword(PasswordUtil.encrypt("123456"));
+        user.setPassword(PasswordUtil.encrypt(userDTO.getUsername(), "123456"));
         user.setRealName(userDTO.getRealName());
         user.setPhone(userDTO.getPhone());
         user.setEmail(userDTO.getEmail());
-        user.setStatus(1); // 默认启用
+        user.setStatus(SysUser.Status.ENABLED.getCode());
         boolean success = sysUserService.save(user);
-
         // 3. 分配角色
         if (success && userDTO.getRoleId() != null) {
             SysUserRoleReqDTO req = new SysUserRoleReqDTO();
@@ -136,7 +133,6 @@ public class SysUserController {
             req.setRoleIds(Collections.singletonList(userDTO.getRoleId()));
             sysUserRoleService.assignRoles(req);
         }
-
         return success ? Result.success("用户创建成功，初始密码：123456") : Result.error("用户创建失败");
     }
 
@@ -147,7 +143,7 @@ public class SysUserController {
     @PreAuthorize("hasRole('admin')")
     @Operation(
             summary = "修改用户信息",
-            parameters = {@Parameter(name = "id", description = "用户ID", required = true, example = "1")}
+            parameters = {@Parameter(name = "id", description = "用户ID", required = true, example = "2")}
     )
     public Result<?> updateUser(@PathVariable Long id, @Valid @RequestBody SysUserReqDTO userDTO) {
         SysUser user = sysUserService.getById(id);
@@ -206,8 +202,63 @@ public class SysUserController {
         if (user == null) {
             return Result.error("用户不存在");
         }
-        user.setPassword(PasswordUtil.encrypt("123456"));
+        user.setPassword(PasswordUtil.encrypt(user.getUsername(), "123456"));
         boolean success = sysUserService.updateById(user);
         return success ? Result.success("密码重置成功，新密码：123456") : Result.error("密码重置失败");
+    }
+
+    @GetMapping("/info")
+    @Operation(
+            summary = "获取当前用户信息",
+            description = "获取当前用户信息"
+    )
+    public Result<SysUserRespDTO> getUserInfo() {
+        String username = SecurityUserUtil.getCurrentUsername();
+        SysUserRespDTO respDTO = sysUserService.getUserByUsername(username);
+        return Result.success("查询成功", respDTO);
+    }
+
+    @PutMapping("/info")
+    @Operation(
+            summary = "修改当前用户",
+            description = "修改当前用户",
+            parameters = {
+                    @Parameter(name = "realName", description = "真实姓名"),
+                    @Parameter(name = "phone", description = "手机号码"),
+                    @Parameter(name = "email", description = "邮箱")
+            }
+    )
+    public Result<SysUserRespDTO> putUserInfo(@Valid @RequestBody SysUserReqDTO userDTO) {
+        String username = SecurityUserUtil.getCurrentUsername();
+        SysUserRespDTO respDTO = sysUserService.getUserByUsername(username);
+        SysUser user = new SysUser();
+        user.setRealName(userDTO.getRealName());
+        user.setPhone(userDTO.getPhone());
+        user.setEmail(userDTO.getEmail());
+        user.setId(respDTO.getId());
+        boolean success = sysUserService.updateById(user);
+        return success ? Result.success("修改成功", sysUserService.getUserByUsername(username)) : Result.error("修改失败");
+    }
+
+    @PostMapping("/change/password")
+    @Operation(
+            summary = "修改密码",
+            description = "修改密码",
+            parameters = {
+                    @Parameter(name = "oldPassword", description = "旧密码", required = true),
+                    @Parameter(name = "newPassword", description = "新密码", required = true)
+            }
+    )
+    public Result<?> changePassword(@Valid @RequestBody ChangePasswordDTO changePasswordDTO) {
+        String username = SecurityUserUtil.getCurrentUsername();
+        SysUser user = sysUserService.getOne(new QueryWrapper<SysUser>().eq("username", username));
+        if (!PasswordUtil.verify(user.getUsername(), changePasswordDTO.getOldPassword(), user.getPassword())) {
+            return Result.error("旧密码错误");
+        }
+        SysUser sysUser = new SysUser();
+        sysUser.setId(user.getId());
+        sysUser.setPassword(PasswordUtil.encrypt(user.getUsername(), changePasswordDTO.getNewPassword()));
+        boolean success = sysUserService.updateById(sysUser);
+        return success ? Result.success("密码修改成功") : Result.error("密码修改失败");
     }
 }

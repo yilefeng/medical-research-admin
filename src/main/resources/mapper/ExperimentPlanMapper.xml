@@ -23,7 +23,9 @@
             </if>
         </where>
         ORDER BY create_time DESC
-        LIMIT #{req.pageSize} OFFSET #{req.offset}
+        <if test="req.pageNum != null">
+            LIMIT #{req.pageSize} OFFSET #{req.offset}
+        </if>
     </select>
     <select id="selectPlanCount" resultType="java.lang.Long">
         SELECT count(1) FROM experiment_plan ep
@@ -44,5 +46,16 @@
                 ))
             </if>
         </where>
+    </select>
+    <select id="existJoin" resultType="java.lang.Integer">
+        SELECT count(1) FROM experiment_plan ep
+        WHERE ep.id = #{id}
+        AND (ep.owner_id = #{ownerId}
+        OR EXISTS (
+        SELECT 1
+        FROM experiment_researcher er
+        WHERE er.experiment_id = ep.id
+        AND er.researcher_id = #{ownerId}
+        ))
     </select>
 </mapper>

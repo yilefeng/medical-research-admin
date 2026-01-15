@@ -1,8 +1,13 @@
 package com.medical.research.controller;
 
+import com.medical.research.dto.sys.SysUserRespDTO;
 import com.medical.research.entity.analysis.AnalysisReport;
+import com.medical.research.entity.experiment.ExperimentPlan;
 import com.medical.research.service.AnalysisReportService;
+import com.medical.research.service.ExperimentPlanService;
+import com.medical.research.service.SysUserService;
 import com.medical.research.util.Result;
+import com.medical.research.util.SecurityUserUtil;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -11,6 +16,8 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/report")
@@ -21,6 +28,12 @@ public class ReportManageController {
     @Autowired
     private AnalysisReportService analysisReportService;
 
+    @Autowired
+    private SysUserService sysUserService;
+
+    @Autowired
+    private ExperimentPlanService experimentPlanService;
+
     @GetMapping("/list")
     @Operation(summary = "报告分页查询", description = "按报告名称模糊查询")
     public Result<Object> getReportList(
@@ -28,7 +41,11 @@ public class ReportManageController {
             @Parameter(description = "页码", example = "1") @RequestParam Integer pageNum,
             @Parameter(description = "每页条数", example = "10") @RequestParam Integer pageSize) {
         try {
-            Object data = analysisReportService.getReportPageList(reportName, pageNum, pageSize);
+            String username = SecurityUserUtil.getCurrentUsername();
+            SysUserRespDTO user = sysUserService.getUserByUsername(username);
+            List<ExperimentPlan> list = experimentPlanService.getAllListByUserId(user.getId());
+            List<Long> experimentIds = list.stream().map(ExperimentPlan::getId).collect(Collectors.toList());
+            Object data = analysisReportService.getReportPageList(experimentIds,reportName, pageNum, pageSize);
             return Result.success("查询成功", data);
         } catch (Exception e) {
             return Result.error("查询失败：" + e.getMessage());
@@ -40,6 +57,7 @@ public class ReportManageController {
     public Result<AnalysisReport> getReportById(
             @Parameter(description = "报告ID", required = true) @PathVariable Long id) {
         try {
+            analysisReportService.checkReport(id);
             AnalysisReport report = analysisReportService.getById(id);
             return Result.success("查询成功", report);
         } catch (Exception e) {
@@ -53,6 +71,7 @@ public class ReportManageController {
             @Parameter(description = "报告ID", required = true) @PathVariable Long id,
             HttpServletResponse response) throws IOException {
         try {
+            analysisReportService.checkReport(id);
             analysisReportService.previewPdf(id, response);
         } catch (Exception e) {
             response.getWriter().write("预览失败：" + e.getMessage());
@@ -65,6 +84,7 @@ public class ReportManageController {
             @Parameter(description = "报告ID", required = true) @PathVariable Long id,
             HttpServletResponse response) throws IOException {
         try {
+            analysisReportService.checkReport(id);
             analysisReportService.downloadPdf(id, response);
         } catch (Exception e) {
             response.getWriter().write("下载失败：" + e.getMessage());
@@ -77,6 +97,7 @@ public class ReportManageController {
             @Parameter(description = "报告ID", required = true) @PathVariable Long id,
             HttpServletResponse response) throws IOException {
         try {
+            analysisReportService.checkReport(id);
             analysisReportService.previewRocImage(id, response);
         } catch (Exception e) {
             response.getWriter().write("预览失败：" + e.getMessage());
@@ -88,6 +109,7 @@ public class ReportManageController {
     public Result<String> deleteReport(
             @Parameter(description = "报告ID", required = true) @PathVariable Long id) {
         try {
+            analysisReportService.checkReport(id);
             boolean success = analysisReportService.deleteReportWithFile(id);
             return success ? Result.success("删除成功") : Result.error("报告不存在");
         } catch (Exception e) {

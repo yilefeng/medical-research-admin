@@ -1,9 +1,11 @@
 package com.medical.research.controller;
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.medical.research.dto.LoginDTO;
 import com.medical.research.dto.sys.SysUserRespDTO;
 import com.medical.research.entity.sys.SysUser;
 import com.medical.research.service.SysUserService;
+import com.medical.research.util.AESUtil;
 import com.medical.research.util.JwtUtil;
 import com.medical.research.util.PasswordUtil;
 import com.medical.research.util.Result;
@@ -53,18 +55,18 @@ public class LoginController {
                     @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "500", description = "用户名不存在/密码错误/用户已禁用")
             }
     )
-    public Result<?> login(@RequestBody LoginDTO loginDTO) {
+    public Result<?> login(@RequestBody LoginDTO loginDTO) throws Exception {
         // 1. 查询用户
-        SysUser user = sysUserService.getUserByUsername(loginDTO.getUsername());
+        SysUser user = sysUserService.getOne(new QueryWrapper<SysUser>().eq("username", loginDTO.getUsername()));
         if (user == null) {
             return Result.error("用户名不存在");
         }
         if (user.getStatus() == 0) {
             return Result.error("用户已禁用，请联系管理员");
         }
-
+        String decrypt = AESUtil.decrypt(loginDTO.getPassword());
         // 2. 验证密码
-        if (!PasswordUtil.verify(loginDTO.getPassword(), user.getPassword())) {
+        if (!PasswordUtil.verify(user.getUsername(), decrypt, user.getPassword())) {
             return Result.error("密码错误");
         }
 
