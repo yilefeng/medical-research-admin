@@ -15,6 +15,7 @@ import com.medical.research.service.ExperimentPlanService;
 import com.medical.research.util.PdfReportUtil;
 import com.medical.research.util.RocChartUtil;
 import com.medical.research.util.StatTestUtil;
+import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -237,6 +238,8 @@ public class AnalysisReportServiceImpl extends ServiceImpl<AnalysisReportMapper,
         LambdaQueryWrapper<AnalysisReport> wrapper = new LambdaQueryWrapper<>();
         if (reportName != null && !reportName.isEmpty()) {
             wrapper.like(AnalysisReport::getReportName, reportName);
+        }
+        if (CollectionUtils.isNotEmpty(experimentIds)) {
             wrapper.in(AnalysisReport::getExperimentId, experimentIds);
         }
         wrapper.orderByDesc(AnalysisReport::getId);
