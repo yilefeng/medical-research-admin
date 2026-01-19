@@ -7,6 +7,7 @@ package com.medical.research.dto.sys;
  */
 import lombok.Data;
 
+import java.time.LocalDateTime;
 import java.util.Date;
 
 @Data
@@ -16,43 +17,21 @@ public class SysOperLogRespDTO {
      */
     private Long id;
 
-    /**
-     * 操作用户名
-     */
+    /** 操作用户名 */
     private String username;
 
-    /**
-     * 操作模块
-     */
+    /** 操作模块 */
     private String operModule;
 
-    /**
-     * 操作类型（新增/修改/删除/查询等）
-     */
+    /** 操作类型：新增/修改/删除/查询/导入/导出 */
     private String operType;
 
-    /**
-     * 操作描述
-     */
-    private String operDesc;
+    /** 操作内容 */
+    private String operContent;
 
-    /**
-     * 操作IP
-     */
+    /** 操作IP */
     private String operIp;
 
-    /**
-     * 操作时间
-     */
-    private Date operTime;
-
-    /**
-     * 操作结果（成功/失败）
-     */
-    private String operResult;
-
-    /**
-     * 错误信息
-     */
-    private String errorMsg;
+    /** 操作时间 */
+    private LocalDateTime operTime;
 }

@@ -8,7 +8,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 
 /**
  * @Auther: yilefeng
@@ -26,17 +25,19 @@ public class FileUtil {
         if (fileInputStream == null) return;
         try (OutputStream outputStream = response.getOutputStream()) {
             response.setCharacterEncoding("utf-8");
-            if (fileName.endsWith("zip")) {
-                response.setContentType("application/x-zip-compressed");
-            } else {
-                response.setContentType("application/octet-stream");
-            }
-            response.setHeader("Content-Disposition", "attachment; filename*=UTF-8''" + URLEncoder.encode(fileName, UTF8));
+            response.setContentType("application/pdf");
+            String sanitizedFileName = fileName != null ?
+                    fileName.replaceAll("[^\\w\\s\\.\\-_~]", "_") :
+                    "unnamed_file";
+            String encodedFileName = URLEncoder.encode(sanitizedFileName, UTF8);
+            String dispositionType = open ? "inline" : "attachment";
+            response.setHeader("Content-Disposition", dispositionType + "; filename*=UTF-8''" + encodedFileName);
             byte[] buffer = new byte[BUFFER_SIZE];
             int n = 0;
             while ((n = fileInputStream.read(buffer)) != -1) {
                 outputStream.write(buffer, 0, n);
             }
+            outputStream.flush();
         } finally {
             fileInputStream.close();
         }

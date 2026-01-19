@@ -3,12 +3,13 @@ package com.medical.research.aspect;
 import com.alibaba.fastjson2.JSON;
 import com.medical.research.dto.sys.SysUserRespDTO;
 import com.medical.research.entity.sys.SysOperLog;
-import com.medical.research.entity.sys.SysUser;
 import com.medical.research.service.SysOperLogService;
 import com.medical.research.service.SysUserService;
+import com.medical.research.util.IpUtil;
 import com.medical.research.util.JwtUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.AfterReturning;
 import org.aspectj.lang.annotation.Aspect;
@@ -34,6 +35,9 @@ public class OperLogAspect {
     private final UserDetailsService userDetailsService;
     private final SysUserService sysUserService;
 
+    private static final String AUTHORIZATION_HEADER = "Authorization";
+    private static final String BEARER_PREFIX = "Bearer ";
+
     // 定义切点：所有controller包下的方法
     @Pointcut("execution(* com.medical.research.controller..*(..))")
     public void operLogPointcut() {
@@ -47,10 +51,11 @@ public class OperLogAspect {
             if (attributes == null) return;
             HttpServletRequest request = attributes.getRequest();
 
-            // 获取token解析用户信息
-            String token = request.getHeader("token");
-            if (token == null || token.isEmpty()) return;
-
+            String auth = request.getHeader(AUTHORIZATION_HEADER);
+            String token = null;
+            if (StringUtils.isNotEmpty( auth)) {
+                token = auth.replace(BEARER_PREFIX, "").trim();
+            }
             String username = jwtUtil.extractUsername(token);
             UserDetails userDetails = userDetailsService.loadUserByUsername(username);
             SysUserRespDTO user = sysUserService.getUserByUsername(userDetails.getUsername());
@@ -59,7 +64,7 @@ public class OperLogAspect {
             SysOperLog operLog = new SysOperLog();
             operLog.setUserId(user.getId());
             operLog.setUsername(username);
-            operLog.setOperIp(request.getRemoteAddr());
+            operLog.setOperIp(IpUtil.getIpAddress(request));
             operLog.setOperTime(LocalDateTime.now());
 
             // 获取方法信息

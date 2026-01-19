@@ -52,6 +52,7 @@ public class ResearchDataServiceImpl extends ServiceImpl<ResearchDataMapper, Res
         Page<ResearchData> page = new Page<>(pageNum, pageSize);
         LambdaQueryWrapper<ResearchData> wrapper = new LambdaQueryWrapper<>();
         wrapper.in(ResearchData::getExperimentId, experimentIdList);
+        wrapper.eq(ResearchData::getStatus, ResearchData.Status.NORMAL.getValue());
         wrapper.orderByDesc(ResearchData::getId);
         return this.page(page, wrapper);
     }

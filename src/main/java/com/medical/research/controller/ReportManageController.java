@@ -1,5 +1,7 @@
 package com.medical.research.controller;
 
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.medical.research.dto.report.AnalysisReportRespDTO;
 import com.medical.research.dto.sys.SysUserRespDTO;
 import com.medical.research.entity.analysis.AnalysisReport;
 import com.medical.research.entity.experiment.ExperimentPlan;
@@ -11,12 +13,14 @@ import com.medical.research.util.SecurityUserUtil;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @RestController
@@ -36,7 +40,7 @@ public class ReportManageController {
 
     @GetMapping("/list")
     @Operation(summary = "报告分页查询", description = "按报告名称模糊查询")
-    public Result<Object> getReportList(
+    public Result<Page<AnalysisReportRespDTO>> getReportList(
             @Parameter(description = "报告名称（可选）") @RequestParam(required = false) String reportName,
             @Parameter(description = "页码", example = "1") @RequestParam Integer pageNum,
             @Parameter(description = "每页条数", example = "10") @RequestParam Integer pageSize) {
@@ -45,62 +49,44 @@ public class ReportManageController {
             SysUserRespDTO user = sysUserService.getUserByUsername(username);
             List<ExperimentPlan> list = experimentPlanService.getAllListByUserId(user.getId());
             List<Long> experimentIds = list.stream().map(ExperimentPlan::getId).collect(Collectors.toList());
-            Object data = analysisReportService.getReportPageList(experimentIds,reportName, pageNum, pageSize);
-            return Result.success("查询成功", data);
+            Page<AnalysisReport> page = analysisReportService.getReportPageList(experimentIds, reportName, pageNum, pageSize);
+
+            Page<AnalysisReportRespDTO> dtoPage = new Page<>();
+            dtoPage.setCurrent(page.getCurrent());
+            dtoPage.setSize(page.getSize());
+            dtoPage.setTotal(page.getTotal());
+            dtoPage.setPages(page.getPages());
+
+            Map<Long, ExperimentPlan> planMap = list.stream()
+                    .filter(Objects::nonNull)
+                    .collect(Collectors.toMap(
+                            ExperimentPlan::getId,
+                            Function.identity(),
+                            (existing, replacement) -> existing
+                    ));
+
+            List<AnalysisReportRespDTO> dtoRecords = page.getRecords().stream()
+                    .map(report -> {
+                        AnalysisReportRespDTO resp = new AnalysisReportRespDTO();
+                        try {
+                            BeanUtils.copyProperties(report, resp);
+
+                            // 设置关联的计划名称
+                            Long experimentId = report.getExperimentId();
+                            if (experimentId != null && planMap.containsKey(experimentId)) {
+                                resp.setPlanName(planMap.get(experimentId).getPlanName());
+                            }
+                        } catch (Exception e) {
+                            throw new RuntimeException("对象属性复制失败", e);
+                        }
+                        return resp;
+                    })
+                    .collect(Collectors.toList());
+
+            dtoPage.setRecords(dtoRecords);
+            return Result.success("查询成功", dtoPage);
         } catch (Exception e) {
             return Result.error("查询失败：" + e.getMessage());
-        }
-    }
-
-    @GetMapping("/{id}")
-    @Operation(summary = "单条报告查询", description = "按报告ID查询详情")
-    public Result<AnalysisReport> getReportById(
-            @Parameter(description = "报告ID", required = true) @PathVariable Long id) {
-        try {
-            analysisReportService.checkReport(id);
-            AnalysisReport report = analysisReportService.getById(id);
-            return Result.success("查询成功", report);
-        } catch (Exception e) {
-            return Result.error("查询失败：" + e.getMessage());
-        }
-    }
-
-    @GetMapping("/preview/{id}")
-    @Operation(summary = "PDF预览", description = "返回PDF文件流")
-    public void previewPdf(
-            @Parameter(description = "报告ID", required = true) @PathVariable Long id,
-            HttpServletResponse response) throws IOException {
-        try {
-            analysisReportService.checkReport(id);
-            analysisReportService.previewPdf(id, response);
-        } catch (Exception e) {
-            response.getWriter().write("预览失败：" + e.getMessage());
-        }
-    }
-
-    @GetMapping("/download/{id}")
-    @Operation(summary = "PDF下载", description = "触发浏览器下载PDF")
-    public void downloadPdf(
-            @Parameter(description = "报告ID", required = true) @PathVariable Long id,
-            HttpServletResponse response) throws IOException {
-        try {
-            analysisReportService.checkReport(id);
-            analysisReportService.downloadPdf(id, response);
-        } catch (Exception e) {
-            response.getWriter().write("下载失败：" + e.getMessage());
-        }
-    }
-
-    @GetMapping("/roc/preview/{id}")
-    @Operation(summary = "ROC图片预览", description = "返回ROC图片流")
-    public void previewRocImage(
-            @Parameter(description = "报告ID", required = true) @PathVariable Long id,
-            HttpServletResponse response) throws IOException {
-        try {
-            analysisReportService.checkReport(id);
-            analysisReportService.previewRocImage(id, response);
-        } catch (Exception e) {
-            response.getWriter().write("预览失败：" + e.getMessage());
         }
     }
 

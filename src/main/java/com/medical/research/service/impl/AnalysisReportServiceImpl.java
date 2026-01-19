@@ -1,6 +1,7 @@
 package com.medical.research.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.medical.research.entity.analysis.AnalysisReport;
@@ -17,17 +18,12 @@ import com.medical.research.util.RocChartUtil;
 import com.medical.research.util.StatTestUtil;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import javax.servlet.http.HttpServletResponse;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.OutputStream;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -43,10 +39,6 @@ public class AnalysisReportServiceImpl extends ServiceImpl<AnalysisReportMapper,
     private PdfReportUtil pdfReportUtil;
     @Autowired
     private RocChartUtil rocChartUtil;
-
-    @Value("${custom.pdf.save-path:/data1/pdf}")
-    private String pdfSavePath;
-
     @Autowired
     private ExperimentPlanService experimentPlanService;
 
@@ -86,6 +78,7 @@ public class AnalysisReportServiceImpl extends ServiceImpl<AnalysisReportMapper,
 
         // 6. 保存报告
         report.setPdfPath(pdfPath);
+        report.setRocImagePath(rocImagePath);
         report.setCreateTime(LocalDateTime.now());
         this.save(report);
 
@@ -97,113 +90,6 @@ public class AnalysisReportServiceImpl extends ServiceImpl<AnalysisReportMapper,
     }
 
     @Override
-    public Map<String, Object> getReportDetail(Long reportId) {
-        AnalysisReport report = this.getById(reportId);
-        Map<String, Object> detail = new HashMap<>();
-        if (report != null) {
-            detail.put("report", report);
-            // 补充ROC数据
-            detail.putAll(getRocData(reportId));
-        }
-        return detail;
-    }
-
-    @Override
-    public Map<String, Object> getRocData(Long reportId) {
-        AnalysisReport report = this.getById(reportId);
-        Map<String, Object> rocData = new HashMap<>();
-        if (report != null) {
-            List<ResearchData> dataList = researchDataMapper.selectList(new LambdaQueryWrapper<ResearchData>()
-                    .eq(ResearchData::getExperimentId, report.getExperimentId()));
-            List<Integer> labels = dataList.stream().map(ResearchData::getTrueLabel).collect(Collectors.toList());
-            List<Double> scores1 = dataList.stream().map(ResearchData::getModel1Score).collect(Collectors.toList());
-            List<Double> scores2 = dataList.stream().map(ResearchData::getModel2Score).collect(Collectors.toList());
-
-            double[][] roc1 = RocChartUtil.calculateRocData(labels, scores1);
-            double[][] roc2 = RocChartUtil.calculateRocData(labels, scores2);
-            rocData.put("fpr1", roc1[0]);
-            rocData.put("tpr1", roc1[1]);
-            rocData.put("fpr2", roc2[0]);
-            rocData.put("tpr2", roc2[1]);
-        }
-        return rocData;
-    }
-
-    @Override
-    public void previewPdf(Long id, HttpServletResponse response) throws Exception {
-        AnalysisReport report = this.getById(id);
-        if (report == null || report.getPdfPath() == null) {
-            throw new Exception("PDF报告不存在");
-        }
-        String pdfLocalPath = report.getPdfPath().replace("/upload/report/", pdfSavePath);
-        File pdfFile = new File(pdfLocalPath);
-        if (!pdfFile.exists()) {
-            throw new Exception("PDF文件不存在");
-        }
-
-        // 返回文件流
-        response.setContentType("application/pdf");
-        response.setHeader("Content-Disposition", "inline; filename=" + pdfFile.getName());
-        try (FileInputStream fis = new FileInputStream(pdfFile);
-             OutputStream os = response.getOutputStream()) {
-            byte[] buffer = new byte[1024];
-            int len;
-            while ((len = fis.read(buffer)) != -1) {
-                os.write(buffer, 0, len);
-            }
-        }
-    }
-
-    @Override
-    public void downloadPdf(Long id, HttpServletResponse response) throws Exception {
-        AnalysisReport report = this.getById(id);
-        if (report == null || report.getPdfPath() == null) {
-            throw new Exception("PDF报告不存在");
-        }
-        String pdfLocalPath = report.getPdfPath().replace("/upload/report/", pdfSavePath);
-        File pdfFile = new File(pdfLocalPath);
-        if (!pdfFile.exists()) {
-            throw new Exception("PDF文件不存在");
-        }
-
-        // 触发下载
-        response.setContentType("application/octet-stream");
-        response.setHeader("Content-Disposition", "attachment; filename=" + pdfFile.getName());
-        try (FileInputStream fis = new FileInputStream(pdfFile);
-             OutputStream os = response.getOutputStream()) {
-            byte[] buffer = new byte[1024];
-            int len;
-            while ((len = fis.read(buffer)) != -1) {
-                os.write(buffer, 0, len);
-            }
-        }
-    }
-
-    @Override
-    public void previewRocImage(Long id, HttpServletResponse response) throws Exception {
-        AnalysisReport report = this.getById(id);
-        if (report == null || report.getRocImagePath() == null) {
-            throw new Exception("ROC图片不存在");
-        }
-        String rocLocalPath = report.getRocImagePath().replace("/upload/report/roc/", pdfSavePath + "roc/");
-        File rocFile = new File(rocLocalPath);
-        if (!rocFile.exists()) {
-            throw new Exception("ROC图片文件不存在");
-        }
-
-        // 返回图片流
-        response.setContentType("image/png");
-        try (FileInputStream fis = new FileInputStream(rocFile);
-             OutputStream os = response.getOutputStream()) {
-            byte[] buffer = new byte[1024];
-            int len;
-            while ((len = fis.read(buffer)) != -1) {
-                os.write(buffer, 0, len);
-            }
-        }
-    }
-
-    @Override
     public boolean deleteReportWithFile(Long id) {
         AnalysisReport report = this.getById(id);
         if (report == null) {
@@ -211,26 +97,18 @@ public class AnalysisReportServiceImpl extends ServiceImpl<AnalysisReportMapper,
         }
         // 删除PDF文件
         if (report.getPdfPath() != null) {
-            String pdfLocalPath = report.getPdfPath().replace("/upload/report/", pdfSavePath);
-            File pdfFile = new File(pdfLocalPath);
+            File pdfFile = new File(report.getPdfPath());
             if (pdfFile.exists()) {
                 pdfFile.delete();
             }
         }
-        // 删除ROC图片
-        if (report.getRocImagePath() != null) {
-            String rocLocalPath = report.getRocImagePath().replace("/upload/report/roc/", pdfSavePath + "roc/");
-            File rocFile = new File(rocLocalPath);
-            if (rocFile.exists()) {
-                rocFile.delete();
-            }
-        }
-        // 删除数据库记录
-        return this.removeById(id);
+        return update(new UpdateWrapper<AnalysisReport>()
+                .set("status", AnalysisReport.Status.DELETED.getValue())
+                .eq("id", id));
     }
 
     // 报告分页查询（供报告管理模块调用）
-    public Object getReportPageList(List<Long> experimentIds, String reportName, Integer pageNum, Integer pageSize) {
+    public Page<AnalysisReport> getReportPageList(List<Long> experimentIds, String reportName, Integer pageNum, Integer pageSize) {
         if (experimentIds == null || experimentIds.isEmpty()) {
             return new Page<>();
         }
@@ -242,6 +120,7 @@ public class AnalysisReportServiceImpl extends ServiceImpl<AnalysisReportMapper,
         if (CollectionUtils.isNotEmpty(experimentIds)) {
             wrapper.in(AnalysisReport::getExperimentId, experimentIds);
         }
+        wrapper.eq(AnalysisReport::getStatus, AnalysisReport.Status.NORMAL.getValue());
         wrapper.orderByDesc(AnalysisReport::getId);
         return this.page(page, wrapper);
     }

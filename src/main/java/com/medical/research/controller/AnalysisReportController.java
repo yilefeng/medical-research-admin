@@ -3,7 +3,6 @@ package com.medical.research.controller;
 import com.medical.research.entity.analysis.AnalysisReport;
 import com.medical.research.service.AnalysisReportService;
 import com.medical.research.service.ExperimentPlanService;
-import com.medical.research.service.SysUserService;
 import com.medical.research.util.Result;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -38,30 +37,6 @@ public class AnalysisReportController {
         } catch (Exception e) {
             log.error("生成失败：", e);
             return Result.error("生成失败：" + e.getMessage());
-        }
-    }
-
-    @GetMapping("/detail/{reportId}")
-    @Operation(summary = "报告详情", description = "按报告ID查询分析结果")
-    public Result<Map<String, Object>> getReportDetail(
-            @Parameter(description = "报告ID", required = true) @PathVariable Long reportId) {
-        try {
-            Map<String, Object> detail = analysisReportService.getReportDetail(reportId);
-            return Result.success("查询成功", detail);
-        } catch (Exception e) {
-            return Result.error("查询失败：" + e.getMessage());
-        }
-    }
-
-    @GetMapping("/roc/data/{reportId}")
-    @Operation(summary = "ROC数据", description = "按报告ID获取FPR/TPR数据")
-    public Result<Map<String, Object>> getRocData(
-            @Parameter(description = "报告ID", required = true) @PathVariable Long reportId) {
-        try {
-            Map<String, Object> rocData = analysisReportService.getRocData(reportId);
-            return Result.success("查询成功", rocData);
-        } catch (Exception e) {
-            return Result.error("查询失败：" + e.getMessage());
         }
     }
 }

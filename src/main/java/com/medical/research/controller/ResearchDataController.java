@@ -1,5 +1,6 @@
 package com.medical.research.controller;
 
+import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.medical.research.dto.sys.SysUserRespDTO;
 import com.medical.research.entity.experiment.ExperimentPlan;
@@ -100,7 +101,9 @@ public class ResearchDataController {
                 return Result.error("数据不存在");
             }
             experimentPlanService.checkRightExperimentPlan(data.getExperimentId());
-            boolean success = researchDataService.removeById(id);
+            boolean success = researchDataService.update(new UpdateWrapper<ResearchData>()
+                    .set("status", ResearchData.Status.DELETED.getValue())
+                    .eq("id", id));
             return success ? Result.success("删除成功") : Result.error("数据不存在");
         } catch (Exception e) {
             return Result.error("删除失败：" + e.getMessage());
@@ -115,7 +118,9 @@ public class ResearchDataController {
             List<Long> idList = Arrays.stream(ids.split(","))
                     .map(Long::parseLong)
                     .collect(Collectors.toList());
-            boolean success = researchDataService.removeByIds(idList);
+            boolean success = researchDataService.update(new UpdateWrapper<ResearchData>()
+                    .set("status", ResearchData.Status.DELETED.getValue())
+                    .in("id", idList));
             return success ? Result.success("批量删除成功") : Result.error("部分数据不存在");
         } catch (Exception e) {
             return Result.error("批量删除失败：" + e.getMessage());
