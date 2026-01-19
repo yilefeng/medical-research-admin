@@ -181,10 +181,13 @@ public class ExperimentPlanController {
         try {
             String username = SecurityUserUtil.getCurrentUsername();
             Long currentUserId = sysUserService.getUserByUsername(username).getId();
+            SysUserRespDTO user = sysUserService.getUserById(currentUserId);
             UpdateWrapper<ExperimentPlan> updateWrapper = new UpdateWrapper<>();
-            updateWrapper.eq("owner_id", currentUserId)
-                    .eq("id", id)
-                    .set("status", ExperimentPlan.Status.DELETED.getValue());
+            if (!user.getRoleCode().equals(SysRole.ROLE_ADMIN_CODE)) {
+                updateWrapper.eq("owner_id", currentUserId);
+            }
+            updateWrapper.eq("id", id);
+            updateWrapper.set("status", ExperimentPlan.Status.DELETED.getValue());
             boolean success = experimentPlanService.update(updateWrapper);
             if (success) {
                 return Result.success("实验方案删除成功");
