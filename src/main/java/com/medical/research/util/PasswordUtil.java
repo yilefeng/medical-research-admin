@@ -7,6 +7,9 @@ import org.springframework.util.DigestUtils;
  */
 public class PasswordUtil {
 
+    public static final String INIT_PASSWORD = "dw@123";
+
+
     /**
      * MD5加密
      */

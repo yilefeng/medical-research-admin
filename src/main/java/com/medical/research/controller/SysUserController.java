@@ -110,7 +110,7 @@ public class SysUserController {
      */
     @PostMapping
     @PreAuthorize("hasRole('admin')")
-    @Operation(summary = "新增系统用户", description = "创建用户并分配角色，初始密码123456")
+    @Operation(summary = "新增系统用户", description = "创建用户并分配角色，初始密码dw@123")
     public Result<?> createUser(@Valid @RequestBody SysUserReqDTO userDTO) {
         // 1. 检查用户名是否重复
         if (sysUserService.getUserByUsername(userDTO.getUsername()) != null) {
@@ -120,7 +120,7 @@ public class SysUserController {
         // 2. 创建用户（密码默认123456，MD5加密）
         SysUser user = new SysUser();
         user.setUsername(userDTO.getUsername());
-        user.setPassword(PasswordUtil.encrypt(userDTO.getUsername(), "123456"));
+        user.setPassword(PasswordUtil.encrypt(userDTO.getUsername(), PasswordUtil.INIT_PASSWORD));
         user.setRealName(userDTO.getRealName());
         user.setPhone(userDTO.getPhone());
         user.setEmail(userDTO.getEmail());
@@ -133,7 +133,7 @@ public class SysUserController {
             req.setRoleIds(Collections.singletonList(userDTO.getRoleId()));
             sysUserRoleService.assignRoles(req);
         }
-        return success ? Result.success("用户创建成功，初始密码：123456") : Result.error("用户创建失败");
+        return success ? Result.success("用户创建成功，初始密码：dw@123") : Result.error("用户创建失败");
     }
 
     /**
@@ -194,7 +194,7 @@ public class SysUserController {
     @PreAuthorize("hasRole('admin')")
     @Operation(
             summary = "重置用户密码",
-            description = "重置为初始密码123456",
+            description = "重置为初始密码dw@123",
             parameters = {@Parameter(name = "id", description = "用户ID", required = true, example = "2")}
     )
     public Result<?> resetPassword(@PathVariable Long id) {
@@ -202,7 +202,7 @@ public class SysUserController {
         if (user == null) {
             return Result.error("用户不存在");
         }
-        user.setPassword(PasswordUtil.encrypt(user.getUsername(), "123456"));
+        user.setPassword(PasswordUtil.encrypt(user.getUsername(), PasswordUtil.INIT_PASSWORD));
         boolean success = sysUserService.updateById(user);
         return success ? Result.success("密码重置成功，新密码：123456") : Result.error("密码重置失败");
     }
