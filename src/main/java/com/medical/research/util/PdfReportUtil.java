@@ -20,19 +20,18 @@ import java.util.List;
 @Slf4j
 @Component
 public class PdfReportUtil {
-    @Value("${pdf.storage.dir:/data1/pdf}")
-    private String pdfDir;
+    @Value("${download.storage.dir:/data/download}")
+    private String downloadDir;
 
     public String generateReportPdf(AnalysisReport report, ExperimentPlan plan, List<ResearchData> dataList, String rocImagePath) throws Exception {
+        String pdfDir =  downloadDir + "/" + "pdf";
         File dir = new File(pdfDir);
         if (!dir.exists()) {
             dir.mkdirs();
         }
 
         String reportFileName = "科研分析报告_" + report.getReportName() + "_" + System.currentTimeMillis() + ".pdf";
-        String pdfFullPath = pdfDir + File.separator +reportFileName;
-//        String pdfAccessPath = "/upload/report/" + reportFileName;
-
+        String pdfFullPath = pdfDir + "/" +reportFileName;
         Document document = new Document(PageSize.A4, 50, 50, 50, 50);
         PdfWriter.getInstance(document, Files.newOutputStream(Paths.get(pdfFullPath)));
         document.open();

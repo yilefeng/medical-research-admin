@@ -26,6 +26,6 @@ public class PasswordUtil {
     }
 
     public static void main(String[] args) {
-    	System.out.println(encrypt("test", "123456"));
+    	System.out.println(encrypt("admin", "dw@123"));
     }
 }

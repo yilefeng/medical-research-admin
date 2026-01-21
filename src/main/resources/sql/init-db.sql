@@ -2,7 +2,7 @@
 CREATE DATABASE IF NOT EXISTS medical_research DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
 USE medical_research;
 
---实验方案表
+-- 实验方案表
 CREATE TABLE `experiment_plan` (
                                    `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '主键ID',
                                    `plan_name` varchar(255) NOT NULL COMMENT '实验方案名称',
@@ -133,9 +133,9 @@ INSERT INTO `sys_role` (`role_name`, `role_code`, `description`) VALUES
                                                                      ('系统管理员', 'admin', '拥有系统所有操作权限'),
                                                                      ('科研人员', 'researcher', '拥有实验创建、数据上传、分析查看等权限');
 
--- 初始化管理员用户（密码：123456，BCrypt加密）
+-- 初始化管理员用户（密码：dw@123）
 INSERT INTO `sys_user` (`username`, `password`, `real_name`, `phone`, `email`) VALUES
-    ('admin', '$2a$10$7JB720yubVSZvUI0rEqK/.VqGOZTH.ulu33dHOiBE8ByOhJIrdAu2', '系统管理员', '13800138000', 'admin@medical.com');
+    ('admin', '0b9a87f0d8401853038d5b1ea454b6d7', '系统管理员', '13800138000', 'admin@medical.com');
 
 -- 初始化用户角色关联
 INSERT INTO `sys_user_role` (`user_id`, `role_id`) VALUES (1, 1);

@@ -21,17 +21,15 @@ import java.util.List;
 @Slf4j
 @Component
 public class RocChartUtil {
-    @Value("${custom.pdf.save-path:/data1/pdf}")
-    private String pdfSavePath;
-    @Value("${custom.pdf.access-path:/data1/access}")
-    private String pdfAccessPath;
+    @Value("${download.storage.dir:/data/download}")
+    private String downloadDir;
 
     // 生成ROC曲线图（返回图片访问路径）
     public String generateRocChart(List<Double> fpr1, List<Double> tpr1, double auc1,
                                    List<Double> fpr2, List<Double> tpr2, double auc2,
                                    String reportName) throws Exception {
         // 创建图片存储目录
-        String imgDir = pdfSavePath + "roc/";
+        String imgDir = downloadDir + "/" + "roc";
         File dir = new File(imgDir);
         if (!dir.exists()) {
             dir.mkdirs();
@@ -39,7 +37,7 @@ public class RocChartUtil {
 
         // 图片文件名
         String imgFileName = "ROC曲线_" + reportName + "_" + System.currentTimeMillis() + ".png";
-        String imgFullPath = imgDir + imgFileName;
+        String imgFullPath = imgDir + "/" + imgFileName;
 
         // 构建数据集
         XYSeriesCollection dataset = new XYSeriesCollection();
