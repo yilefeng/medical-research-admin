@@ -43,6 +43,16 @@ public class SysUserRespDTO {
     private String roleCode;
 
     /**
+     * 科室
+     */
+    private Integer departmentCode;
+
+    /**
+     * 职称
+     */
+    private Integer titleCode;
+
+    /**
      * 状态：0-禁用 1-启用
      */
     private Integer status;

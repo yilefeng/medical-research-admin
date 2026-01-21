@@ -17,26 +17,6 @@ public interface SysRoleService extends IService<SysRole> {
     Page<SysRoleRespDTO> getRolePage(SysRoleReqDTO req);
 
     /**
-     * 新增角色
-     */
-    boolean addRole(SysRoleReqDTO req);
-
-    /**
-     * 修改角色
-     */
-    boolean updateRole(SysRoleReqDTO req);
-
-    /**
-     * 删除角色
-     */
-    boolean deleteRole(Long id);
-
-    /**
-     * 根据ID查询角色
-     */
-    SysRoleRespDTO getRoleById(Long id);
-
-    /**
      * 根据用户ID查询角色列表
      */
     List<SysRoleRespDTO> getRolesByUserId(Long userId);

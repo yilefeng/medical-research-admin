@@ -124,6 +124,8 @@ public class SysUserController {
         user.setRealName(userDTO.getRealName());
         user.setPhone(userDTO.getPhone());
         user.setEmail(userDTO.getEmail());
+        user.setDepartmentCode(userDTO.getDepartmentCode());
+        user.setTitleCode(userDTO.getTitleCode());
         user.setStatus(SysUser.Status.ENABLED.getCode());
         boolean success = sysUserService.save(user);
         // 3. 分配角色
@@ -154,6 +156,8 @@ public class SysUserController {
         user.setPhone(userDTO.getPhone());
         user.setEmail(userDTO.getEmail());
         user.setStatus(userDTO.getStatus());
+        user.setTitleCode(userDTO.getTitleCode());
+        user.setDepartmentCode(userDTO.getDepartmentCode());
         boolean success = sysUserService.updateById(user);
 
         // 更新角色
@@ -235,6 +239,8 @@ public class SysUserController {
         user.setRealName(userDTO.getRealName());
         user.setPhone(userDTO.getPhone());
         user.setEmail(userDTO.getEmail());
+        user.setTitleCode(userDTO.getTitleCode());
+        user.setDepartmentCode(userDTO.getDepartmentCode());
         user.setId(respDTO.getId());
         boolean success = sysUserService.updateById(user);
         return success ? Result.success("修改成功", sysUserService.getUserByUsername(username)) : Result.error("修改失败");

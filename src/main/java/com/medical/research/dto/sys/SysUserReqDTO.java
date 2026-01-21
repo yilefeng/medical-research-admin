@@ -38,6 +38,16 @@ public class SysUserReqDTO extends PageDTO {
     private String email;
 
     /**
+     * 科室
+     */
+    private Integer departmentCode;
+
+    /**
+     * 职称
+     */
+    private Integer titleCode;
+
+    /**
      * 角色ID
      */
     private Long roleId;

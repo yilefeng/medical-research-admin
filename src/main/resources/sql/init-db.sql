@@ -77,6 +77,8 @@ CREATE TABLE `sys_user` (
                             `real_name` VARCHAR(50) COMMENT '真实姓名',
                             `phone` VARCHAR(20) COMMENT '手机号',
                             `email` VARCHAR(50) COMMENT '邮箱',
+                            `department_code` TINYINT DEFAULT NULL COMMENT '科室编码',
+                            `title_code` TINYINT DEFAULT NULL COMMENT '职称编码',
                             `status` TINYINT DEFAULT 1 COMMENT '状态（1：启用，0：禁用）',
                             `last_login_time` DATETIME COMMENT '最后登录时间',
                             `create_time` DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
@@ -127,11 +129,127 @@ CREATE TABLE `sys_oper_log` (
                                 INDEX `idx_oper_module` (`oper_module`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='系统操作日志表';
 
+-- 科室字典表
+CREATE TABLE `dit_department` (
+                              `id` int NOT NULL AUTO_INCREMENT,
+                              `name` varchar(50) NOT NULL COMMENT '科室名称',
+                              `status` tinyint DEFAULT '1' COMMENT '状态（1：启用，0：禁用）',
+                              `create_time` DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+                              `update_time` DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+                              PRIMARY KEY (`id`) USING BTREE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='科室字典表';
+
+-- 职称字典表
+CREATE TABLE `dit_title` (
+        `id` int NOT NULL AUTO_INCREMENT,
+        `name` varchar(50) NOT NULL COMMENT '职称名称',
+        `status` tinyint DEFAULT '1' COMMENT '状态（1：启用，0：禁用）',
+        `create_time` DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+        `update_time` DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+        PRIMARY KEY (`id`) USING BTREE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='职称字典表';
+
+
 -- 初始化数据
 -- 初始化角色
 INSERT INTO `sys_role` (`role_name`, `role_code`, `description`) VALUES
                                                                      ('系统管理员', 'admin', '拥有系统所有操作权限'),
                                                                      ('科研人员', 'researcher', '拥有实验创建、数据上传、分析查看等权限');
+
+-- 初始化科室
+INSERT INTO `dit_department` (`name`) VALUES
+                                          ('信息科'),
+                                          ('心血管内科'),
+                                          ('消化内科'),
+                                          ('肾内科'),
+                                          ('呼吸内科'),
+                                          ('内分泌科'),
+                                          ('神经内科'),
+                                          ('高压氧科'),
+                                          ('血液科'),
+                                          ('普通外科'),
+                                          ('心血管外科'),
+                                          ('胸外科'),
+                                          ('肝胆外科'),
+                                          ('神经外科'),
+                                          ('泌尿科'),
+                                          ('骨科'),
+                                          ('麻醉医学科'),
+                                          ('整形美容科'),
+                                          ('妇产科'),
+                                          ('皮肤性病科'),
+                                          ('口腔科'),
+                                          ('儿科'),
+                                          ('耳鼻咽喉头颈外科'),
+                                          ('眼科'),
+                                          ('中医科'),
+                                          ('康复医学科'),
+                                          ('营养科'),
+                                          ('全科医学科'),
+                                          ('放射科'),
+                                          ('超声科'),
+                                          ('病理科'),
+                                          ('检验科'),
+                                          ('输血科'),
+                                          ('药剂科'),
+                                          ('药学部'),
+                                          ('急诊科'),
+                                          ('医工科'),
+                                          ('药理基地'),
+                                          ('体检中心'),
+                                          ('老年医学科'),
+                                          ('门诊部'),
+                                          ('机关部门'),
+                                          ('其他');
+
+-- 初始化职称
+INSERT INTO `dit_title` (`name`) VALUES
+                                     ('住院医师'),
+                                     ('主治医师'),
+                                     ('副主任医师'),
+                                     ('主任医师'),
+                                     ('护师'),
+                                     ('主管护师'),
+                                     ('副主任护师'),
+                                     ('主任护师'),
+                                     ('技师'),
+                                     ('主管技师'),
+                                     ('副主任技师'),
+                                     ('主任技师'),
+                                     ('药师'),
+                                     ('主管药师'),
+                                     ('副主任药师'),
+                                     ('主任药师'),
+                                     ('助教'),
+                                     ('讲师'),
+                                     ('副教授'),
+                                     ('教授'),
+                                     ('科员'),
+                                     ('副主任'),
+                                     ('主任'),
+                                     ('副处长'),
+                                     ('处长'),
+                                     ('副院长'),
+                                     ('院长'),
+                                     ('研究实习员'),
+                                     ('助理研究员'),
+                                     ('副研究员'),
+                                     ('研究员'),
+                                     ('助理实验师'),
+                                     ('中级实验师'),
+                                     ('高级实验师'),
+                                     ('助理工程师'),
+                                     ('工程师'),
+                                     ('高级工程师'),
+                                     ('正高级工程师'),
+                                     ('专科生'),
+                                     ('本科生'),
+                                     ('硕士生'),
+                                     ('博士生'),
+                                     ('博士后'),
+                                     ('规培生'),
+                                     ('其他');
+
 
 -- 初始化管理员用户（密码：dw@123）
 INSERT INTO `sys_user` (`username`, `password`, `real_name`, `phone`, `email`) VALUES

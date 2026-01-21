@@ -31,6 +31,16 @@ public class SysUser {
     /** 邮箱 */
     private String email;
 
+    /**
+     * 科室
+     */
+    private Integer departmentCode;
+
+    /**
+     * 职称
+     */
+    private Integer titleCode;
+
     /** 状态：1-启用，0-禁用 */
     private Integer status;
 
