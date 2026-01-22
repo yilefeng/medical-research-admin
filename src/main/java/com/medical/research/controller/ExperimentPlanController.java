@@ -137,14 +137,13 @@ public class ExperimentPlanController {
                     if (experimentResearchers != null) {
                         plan.setResearchIds(
                                 experimentResearchers.stream().map(ExperimentResearcher::getResearcherId).collect(Collectors.toList()));
-
-                        if (userMap.containsKey(plan.getOwnerId())) {
-                            plan.setOwner(userMap.get(plan.getOwnerId()).getUsername());
-                        } else {
-                            plan.setOwner("-");
-                        }
-                        plan.setIsEdit(plan.getOwnerId().equals(user.getId()) || user.getRoleCode().equals(SysRole.ROLE_ADMIN_CODE));
                     }
+                    if (userMap.containsKey(plan.getOwnerId())) {
+                        plan.setOwner(userMap.get(plan.getOwnerId()).getUsername());
+                    } else {
+                        plan.setOwner("-");
+                    }
+                    plan.setIsEdit(plan.getOwnerId().equals(user.getId()) || user.getRoleCode().equals(SysRole.ROLE_ADMIN_CODE));
                 });
             } else {
                 // 如果没有实验记录，则为每个计划设置空的研究员ID列表
