@@ -21,7 +21,7 @@ import java.util.List;
 @Slf4j
 @Component
 public class RocChartUtil {
-    @Value("${download.storage.dir:/data/download}")
+    @Value("${file.storage.dir:/data/download}")
     private String downloadDir;
 
     // 生成ROC曲线图（返回图片访问路径）

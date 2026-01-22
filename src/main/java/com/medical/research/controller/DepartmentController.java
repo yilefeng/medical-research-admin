@@ -24,7 +24,7 @@ public class DepartmentController {
     private final DepartmentMapper departmentMapper;
 
     @GetMapping("/list")
-    @Operation(summary = "科室数据", description = "获取所有科室")
+    @Operation(summary = "获取科室数据", description = "获取所有科室")
     public Result<?> queryList() {
         return Result.success("查询成功", departmentMapper.selectList(new QueryWrapper<Department>().eq("status", 1)));
     }

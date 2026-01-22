@@ -20,7 +20,7 @@ import java.util.List;
 @Slf4j
 @Component
 public class PdfReportUtil {
-    @Value("${download.storage.dir:/data/download}")
+    @Value("${file.storage.dir:/data/download}")
     private String downloadDir;
 
     public String generateReportPdf(AnalysisReport report, ExperimentPlan plan, List<ResearchData> dataList, String rocImagePath) throws Exception {

@@ -70,11 +70,6 @@ public class AnalysisReport extends BaseDO {
     private String pdfPath;
 
     /**
-     * 科研数据CSV文件存储路径
-     */
-    private String researchDataPath;
-
-    /**
      * 创建人ID
      */
     private Long createBy;

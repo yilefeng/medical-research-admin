@@ -24,7 +24,7 @@ public class TitleController {
     private final TitleMapper titleMapper;
 
     @GetMapping("/list")
-    @Operation(summary = "职称数据", description = "获取所有职称")
+    @Operation(summary = "获取职称数据", description = "所有职称")
     public Result<?> list() {
         return Result.success("查询成功", titleMapper.selectList(new QueryWrapper<Title>().eq("status", 1)));
     }

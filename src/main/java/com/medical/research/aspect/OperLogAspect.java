@@ -7,6 +7,7 @@ import com.medical.research.service.SysOperLogService;
 import com.medical.research.service.SysUserService;
 import com.medical.research.util.IpUtil;
 import com.medical.research.util.JwtUtil;
+import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -72,8 +73,12 @@ public class OperLogAspect {
             Method method = signature.getMethod();
             operLog.setOperModule(method.getDeclaringClass().getSimpleName()); // 模块名
             operLog.setOperType(getOperType(method.getName())); // 操作类型
+
+            //@Operation(summary = "获取所有科室"
+            operLog.setOperContent(method.getAnnotation(Operation.class).summary());
+
             if (result != null) {
-                operLog.setOperContent("请求参数：" + JSON.toJSONString(joinPoint.getArgs()) + " | 返回结果：" + JSON.toJSONString(result));
+                operLog.setOperContent(method.getAnnotation(Operation.class).summary() + ",请求参数：" + JSON.toJSONString(joinPoint.getArgs()) + " | 返回结果：" + JSON.toJSONString(result));
             }
             // 保存日志
             operLogService.save(operLog);
@@ -84,7 +89,7 @@ public class OperLogAspect {
 
     // 根据方法名判断操作类型
     private String getOperType(String methodName) {
-        if (methodName.startsWith("create") || methodName.startsWith("add")) {
+        if (methodName.startsWith("create") || methodName.startsWith("add") || methodName.startsWith("generate")) {
             return "新增";
         } else if (methodName.startsWith("update") || methodName.startsWith("edit")) {
             return "修改";

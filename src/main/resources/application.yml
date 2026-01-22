@@ -7,9 +7,9 @@ spring:
   # 数据库配置
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://localhost:3306/medical_research?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai
-    username: root  # 替换为实际用户名
-    password: deepwise  # 替换为实际密码
+    url: jdbc:mysql://${DB.HOST:localhost}:${DB.PORT:3306}/medical_research?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai
+    username: ${DB.USERNAME:root}
+    password: ${DB.PASSWORD:deepwise}
   # 文件上传
   servlet:
     multipart:
@@ -39,16 +39,14 @@ mybatis-plus:
 
 # JWT 配置
 jwt:
-  secret: abcdefghijklmnopqrstuvwxyz1234567890  # 生产环境需替换
-  expire: 7200000  # 2小时（毫秒）
-  header: token
+  secret: ${JWT_SECRET:abcdefghijklmnopqrstuvwxyz1234567890}
+  expiration: ${JWT_EXPIRATION:14400000}
+  renewal-threshold: ${JWT_RENEWAL_THRESHOLD:3600000}
 
-# MinIO 配置
-minio:
-  endpoint: http://localhost:9000  # MinIO服务地址
-  accessKey: minioadmin            # 访问密钥
-  secretKey: minioadmin            # 秘钥
-  bucketName: medical-research     # 存储桶名称
+# 文件存储配置
+file:
+  storage:
+    dir: ${FILE_STORAGE_DIR:/data/download}
 
 # SpringDoc/Swagger 配置
 springdoc:

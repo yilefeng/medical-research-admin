@@ -1,5 +1,6 @@
 package com.medical.research.controller;
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.medical.research.dto.sys.SysRoleReqDTO;
 import com.medical.research.dto.sys.SysRoleRespDTO;
@@ -63,7 +64,7 @@ public class SysRoleController {
     @PreAuthorize("hasRole('admin')")
     @Operation(summary = "查询所有角色", description = "返回角色列表（无分页）")
     public Result<List<SysRole>> getRoleList() {
-        List<SysRole> list = sysRoleService.list();
+        List<SysRole> list = sysRoleService.list(new QueryWrapper<SysRole>().eq("status", SysRole.Status.ENABLED.getCode()));
         return Result.success("查询成功", list);
     }
 

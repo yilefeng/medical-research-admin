@@ -45,12 +45,6 @@ public class ExperimentPlan extends BaseDO {
     private Long ownerId;
 
     /**
-     * 是否公开（0：不公开，1：公开）
-     */
-    @TableField("is_public")
-    private Boolean isPublic;
-
-    /**
      * 状态（1：正常，0：删除）
      */
     private Integer status;

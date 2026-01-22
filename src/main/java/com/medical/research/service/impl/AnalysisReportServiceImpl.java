@@ -13,8 +13,10 @@ import com.medical.research.mapper.ExperimentPlanMapper;
 import com.medical.research.mapper.ResearchDataMapper;
 import com.medical.research.service.AnalysisReportService;
 import com.medical.research.service.ExperimentPlanService;
+import com.medical.research.service.SysUserService;
 import com.medical.research.util.PdfReportUtil;
 import com.medical.research.util.RocChartUtil;
+import com.medical.research.util.SecurityUserUtil;
 import com.medical.research.util.StatTestUtil;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,6 +43,8 @@ public class AnalysisReportServiceImpl extends ServiceImpl<AnalysisReportMapper,
     private RocChartUtil rocChartUtil;
     @Autowired
     private ExperimentPlanService experimentPlanService;
+    @Autowired
+    private SysUserService sysUserService;
 
     @Override
     public Map<String, Object> generateReport(AnalysisReport report) throws Exception {
@@ -80,6 +84,10 @@ public class AnalysisReportServiceImpl extends ServiceImpl<AnalysisReportMapper,
         report.setPdfPath(pdfPath);
         report.setRocImagePath(rocImagePath);
         report.setCreateTime(LocalDateTime.now());
+
+        String username = SecurityUserUtil.getCurrentUsername();
+        Long currentUserId = sysUserService.getUserByUsername(username).getId();
+        report.setCreateBy(currentUserId);
         this.save(report);
 
         // 7. 返回结果

@@ -27,12 +27,12 @@ public class JwtUtil {
     @Value("${jwt.secret:abcdefghijklmnopqrstuvwxyz1234567890}")
     private String secret;
 
-    // Token 过期时间（默认2小时，单位：毫秒）
-    @Value("${jwt.expiration:7200000}")
+    // Token 过期时间（默认4小时，单位：毫秒）
+    @Value("${jwt.expiration:14400000}")
     private long expiration;
 
-    // Token 续期阈值（默认30分钟，单位：毫秒）：剩余有效期小于该值时触发续期
-    @Value("${jwt.renewal-threshold:1800000}")
+    // Token 续期阈值（默认1小时，单位：毫秒）：剩余有效期小于该值时触发续期
+    @Value("${jwt.renewal-threshold:3600000}")
     private long renewalThreshold;
 
     // 生成签名密钥
