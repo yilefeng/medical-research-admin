@@ -9,7 +9,6 @@ import com.medical.research.dto.sys.SysUserReqDTO;
 import com.medical.research.dto.sys.SysUserRespDTO;
 import com.medical.research.service.SysUserService;
 import com.medical.research.service.SysRoleService;
-import org.jetbrains.annotations.Nullable;
 import org.springframework.beans.BeanUtils;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -118,7 +117,7 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
         return getSysUserRespDTO(user);
     }
 
-    @Nullable
+
     private SysUserRespDTO getSysUserRespDTO(SysUser user) {
         if (user == null) {
             return null;

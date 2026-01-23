@@ -24,6 +24,7 @@
         <jjwt.version>0.11.5</jjwt.version>
         <fastjson2.version>2.0.57</fastjson2.version>
         <springdoc.version>1.8.0</springdoc.version>
+        <easyexcel.version>3.3.2</easyexcel.version>
         <commons-math3.version>3.6.1</commons-math3.version>
         <itextpdf.version>5.5.13.3</itextpdf.version>
     </properties>
@@ -98,6 +99,12 @@
             <groupId>org.springdoc</groupId>
             <artifactId>springdoc-openapi-security</artifactId>
             <version>${springdoc.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.alibaba</groupId>
+            <artifactId>easyexcel</artifactId>
+            <version>${easyexcel.version}</version>
         </dependency>
 
         <!-- Apache Commons Math（统计分析） -->
